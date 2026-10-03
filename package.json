@@ -1,0 +1,16 @@
+{
+  "name": "sentinel-node",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Service monitoring with incident history and explicit telemetry freshness.",
+  "scripts": {
+    "test": "node --test tests/telemetry.test.cjs",
+    "test:browser": "playwright test",
+    "test:browser:list": "playwright test --list"
+  },
+  "engines": { "node": ">=22" },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0"
+  }
+}

@@ -1,0 +1,14 @@
+work/
+__pycache__/
+*.pyc
+.venv/
+backend/endpoints.json
+terraform/.terraform/
+terraform/*.tfstate*
+terraform/*.tfvars
+terraform/*.tfplan
+crash.log
+.DS_Store
+node_modules/
+test-results/
+playwright-report/

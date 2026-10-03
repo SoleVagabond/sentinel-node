@@ -1,0 +1,12 @@
+{
+  "endpoints": [
+    {
+      "id": "website",
+      "name": "Website",
+      "url": "https://example.com/",
+      "timeout_seconds": 5,
+      "degraded_after_ms": 1000,
+      "expected_statuses": [200]
+    }
+  ]
+}

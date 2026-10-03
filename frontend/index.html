@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Service health, incident history, and telemetry freshness in one monitoring dashboard.">
+  <title>SentinelNode · Service health</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a0e17'/%3E%3Cpath d='M10 35h12l6-18 9 31 6-13h11' fill='none' stroke='%233b82f6' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to service health</a>
+  <div class="background-effects" aria-hidden="true"><div class="glow glow-1"></div><div class="glow glow-2"></div></div>
+  <div class="container">
+    <header>
+      <div class="header-content"><p class="eyebrow">SERVICE OBSERVABILITY</p><h1><span class="highlight">Sentinel</span>Node</h1><p>Know what is healthy. Know when the signal stops.</p></div>
+      <div class="status-summary" id="global-status" data-state="unknown"><span class="pulse-ring" aria-hidden="true"></span><span id="global-status-text" role="status">Waiting for telemetry</span></div>
+    </header>
+    <main id="main" tabindex="-1">
+      <section class="demo-panel" id="demo-panel" hidden aria-labelledby="demo-heading">
+        <div><h2 id="demo-heading">Local incident lab</h2><p>These controls change local test services. Every status comes from an HTTP check.</p></div>
+        <div class="scenario-buttons" role="group" aria-label="Demo scenarios">
+          <button data-scenario="healthy" aria-pressed="false">Healthy</button><button data-scenario="degraded" aria-pressed="false">Slow response</button><button data-scenario="outage" aria-pressed="false">API outage</button><button data-scenario="stale" aria-pressed="false">Pause telemetry</button><button data-scenario="recovered" aria-pressed="false">Recover</button>
+        </div>
+        <p id="scenario-message" role="status">Demo environment · checks every 5 seconds</p>
+      </section>
+      <div class="notice" id="notice" role="status" hidden></div>
+      <section class="overview" aria-label="Current monitoring summary">
+        <div class="stat"><span>Monitored services</span><strong id="service-count">—</strong></div>
+        <div class="stat"><span>Operational</span><strong id="healthy-count">—</strong></div>
+        <div class="stat"><span>Active incidents</span><strong id="incident-count">—</strong></div>
+        <div class="stat"><span>Telemetry age</span><strong id="telemetry-age">—</strong></div>
+      </section>
+      <div class="controls"><div><h2>Service health</h2><p id="last-updated">Waiting for the first completed check.</p></div><button id="refresh-btn" class="glass-btn">Refresh</button></div>
+      <div class="grid" id="endpoint-grid" aria-label="Monitored services"></div>
+      <section class="incident-section" aria-labelledby="incidents-heading"><div class="section-heading"><h2 id="incidents-heading">Incident timeline</h2><p>Failures, slow responses, and confirmed recovery.</p></div><div id="incidents-list"><p class="empty">No telemetry yet.</p></div></section>
+    </main>
+    <footer><p id="environment-label">Read-only monitoring dashboard</p><p>Latency measures the HTTP response headers. History shows sampled checks, not continuous uptime.</p></footer>
+  </div>
+  <template id="card-template">
+    <article class="card glass-panel" data-status="Unknown">
+      <div class="card-header"><h3 class="endpoint-name"></h3><span class="status-indicator"></span></div>
+      <p class="endpoint-url"></p>
+      <div class="card-body"><div class="metric"><span class="metric-label">HTTP response</span><span class="metric-value status-code">—</span></div><div class="metric"><span class="metric-label">Response time</span><span class="metric-value latency">—</span></div><p class="error-message" hidden></p></div>
+      <div class="sample-history" aria-label="Recent sampled checks"></div><p class="history-caption">No history available</p>
+    </article>
+  </template>
+  <script src="telemetry.js"></script><script src="app.js" defer></script>
+</body>
+</html>
