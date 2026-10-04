@@ -133,6 +133,8 @@ test('accepted notification with a lost reply retries without another receiver n
   await expect(page.getByRole('button', { name: 'Lose next reply', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Lose next reply', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'API outage', exact: true }).click();
+  await expect(status(page)).toHaveText('Service outage detected');
+  await expect(page.getByRole('button', { name: 'API outage', exact: true })).toBeEnabled();
   const initial = await (await request.get('/alerts.json')).json();
   const eventId = initial.deliveries.at(-1).event.id;
   await expect.poll(async () => {
