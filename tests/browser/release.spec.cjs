@@ -164,6 +164,11 @@ test('unavailable or malformed optional delivery history leaves health trustwort
 });
 
 test('notification controls explain every action and send an independent real test', async ({ page, request }, testInfo) => {
+  const shortcut = page.getByRole('link', { name: 'Open notification lab ↓', exact: true });
+  await expect(shortcut).toBeInViewport();
+  await shortcut.click();
+  await expect(page.locator('#notification-lab')).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeInViewport();
   await page.getByRole('button', { name: 'Receiver available', exact: true }).click();
   await expect(page.locator('#notification-action')).toContainText('Receiver available.');
   await expect.poll(async () => {

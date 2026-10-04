@@ -23,6 +23,7 @@
           <button data-scenario="healthy" aria-pressed="false">Healthy</button><button data-scenario="degraded" aria-pressed="false">Slow response</button><button data-scenario="outage" aria-pressed="false">API outage</button><button data-scenario="stale" aria-pressed="false">Pause telemetry</button><button data-scenario="recovered" aria-pressed="false">Recover</button>
         </div>
         <p id="scenario-message" role="status">Demo environment · checks every 5 seconds</p>
+        <a class="lab-shortcut" href="#notification-lab">Open notification lab ↓</a>
       </section>
       <div class="notice" id="notice" role="status" hidden></div>
       <section class="overview" aria-label="Current monitoring summary">
@@ -34,7 +35,7 @@
       <div class="controls"><div><h2>Service health</h2><p id="last-updated">Waiting for the first completed check.</p></div><button id="refresh-btn" class="glass-btn">Refresh</button></div>
       <div class="grid" id="endpoint-grid" role="group" aria-label="Monitored services"></div>
       <section class="incident-section" aria-labelledby="incidents-heading"><div class="section-heading"><h2 id="incidents-heading">Incident timeline</h2><p>Failures, slow responses, and confirmed recovery.</p></div><div id="incidents-list"><p class="empty">No telemetry yet.</p></div></section>
-      <section class="incident-section" id="notification-lab" hidden aria-labelledby="notifications-heading">
+      <section class="incident-section" id="notification-lab" hidden tabindex="-1" aria-labelledby="notifications-heading">
         <div class="section-heading"><h2 id="notifications-heading">Notification delivery lab</h2><p>Real local HTTP delivery · saved across restarts</p></div>
         <p class="notification-note">Choose a receiver state, then send a test notification here or trigger a service incident above. Tests exercise real local delivery without changing service health.</p>
         <div class="scenario-buttons" role="group" aria-label="Local notification receiver">

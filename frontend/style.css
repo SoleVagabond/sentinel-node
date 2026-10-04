@@ -347,6 +347,10 @@ h2 { font-size: 1.1rem; font-weight: 600; }
 .delivery-list { margin-top: 1rem; }
 .notification-note { color: #aabbcf; font-size: .8rem; line-height: 1.6; }
 .notification-feedback { color: #dbeafe; background: #14243c; border-left: 3px solid #60a5fa; padding: .8rem 1rem; font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
+.lab-shortcut { display: inline-block; margin-top: .8rem; color: #dbeafe; background: #14243c; border: 1px solid #60a5fa; border-radius: 8px; padding: .65rem 1rem; font-size: .9rem; text-decoration: none; }
+.lab-shortcut:hover { background: #203858; }
+.lab-shortcut:focus-visible, #notification-lab:focus-visible { outline: 3px solid #a5c8ff; outline-offset: 4px; }
+#notification-lab { scroll-margin-top: 1rem; }
 .delivery-row > div { min-width: 0; overflow-wrap: anywhere; }
 footer { text-align: left; margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--glass-border); font-size: .75rem; line-height: 1.8; color: #aabbcf; }
 @media (max-width: 820px) { header { flex-direction: column; align-items: flex-start; } .overview { grid-template-columns: repeat(2, 1fr); } .section-heading { flex-direction: column; gap: .4rem; } }
