@@ -19,6 +19,13 @@ jobs:
       - run: python scripts/record_notifications.py
       - run: node --test tests/telemetry.test.cjs
       - run: node --check frontend/app.js
+      - run: node --check sentinelnode/assets/app.js
+      - run: python scripts/package_app.py
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: sentinel-application
+          path: work/sentinel.pyz
+          retention-days: 30
       - run: python scripts/package_lambda.py --config backend/endpoints.example.json
       - run: python tests/cloud_smoke.py
   infrastructure:

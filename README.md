@@ -2,17 +2,45 @@
 
 [![Project checks](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml/badge.svg)](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml)
 
-Service monitoring with incident history and explicit telemetry freshness. A Python monitor probes configured HTTP endpoints; the dashboard separates an observed service failure from a monitor that has stopped reporting.
+Sentinel is a single-operator HTTP monitoring application. Configure services, run scheduled checks, investigate incidents, retry failed notifications, and retain observations in a private SQLite database. Its dashboard separates an observed service failure from a monitor that has stopped reporting.
 
-The local incident lab and automated checks are verified. Live AWS deployment is pending; this release does not claim observed cloud uptime. See the [case study](docs/case-study.md) and [verification record](docs/validation.md).
+The application runs on your computer or a server with Python 3.13 and no runtime package installation. The optional AWS dashboard remains a separate deployment path, with live deployment pending. See the [application guide](docs/application.md), [case study](docs/case-study.md), and [verification record](docs/validation.md).
 
-**Explore in your browser:** [Interactive incident replay](https://solevagabond.github.io/lab.html#sentinel/outage/0). It uses recorded local observations and the same freshness logic as the dashboard. For real loopback HTTP checks and scenario controls, run the local lab below.
+**Try the application:** `python scripts/run_app.py --demo`, then open **http://127.0.0.1:8798/**. Two real loopback services and a receiver let you exercise outages, acknowledgement, recovery, and lost replies. Demo data is saved separately from live configuration.
+
+**Quick browser preview:** [Recorded incident replay](https://solevagabond.github.io/lab.html#sentinel/outage/0). This static portfolio preview replays local evidence; it does not run the operator application or monitor public services.
+
+## Run your own workspace
+
+```console
+python scripts/run_app.py
+```
+
+Open **http://127.0.0.1:8798/** and choose **Services → Add service**. Live mode starts empty. Add only endpoints you operate or are authorized to monitor. Your service configuration, observations, incident notes, and pending deliveries survive restarts under `~/.sentinel/`.
+
+- **Overview:** fresh health, paused or stale monitoring, open incidents, and pending deliveries.
+- **Services:** configure up to eight endpoints, expected HTTP codes, timeouts, and slow-response thresholds; edit, pause, resume, or remove them.
+- **Incidents:** acknowledge and annotate an incident without pretending it recovered. A healthy check confirms recovery.
+- **Notifications:** configure an optional webhook, send an explicit test, inspect attempts, cancel pending delivery, or deliberately retry a failed notification with its original ID.
+- **History:** filter saved observations, examine response times, and export CSV.
+- **Settings:** change the schedule and retention, pause checks, and download a consistent database backup.
+
+Administration binds to loopback. On a remote server, access it through an SSH tunnel; this version is a private single-operator workspace. The [guide](docs/application.md) covers launch, notifications, storage, backup, restoration, and boundaries.
+
+## Portable application
+
+```console
+python scripts/package_app.py
+python work/sentinel.pyz --demo
+```
+
+The reproducible `.pyz` contains the program and dashboard. Copy it to a computer with Python 3.13 and run `python sentinel.pyz` for a live workspace. The [Project checks workflow](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml) publishes this package as the `sentinel-application` artifact after its application checks pass. No Node.js or cloud account is required to run it.
 
 ![Local incident lab showing an HTTP service outage](docs/evidence/outage.png)
 
 [Stale monitoring screenshot](docs/evidence/stale.png) · [Retained recovery timeline](docs/evidence/recovery.png) · [Recorded local incident sequence](docs/evidence/local-incident-sequence.json)
 
-## Try it locally
+## Original incident lab
 
 Python 3.13 and Node.js 22 or newer are the development baseline. The demo itself needs only Python; no account, API key, package installation, or cloud resource is required.
 
@@ -73,7 +101,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-On Linux, use `npx playwright install --with-deps chromium` to install browser system dependencies too. The suite starts its own loopback server on port 8792 and checks desktop, 375-pixel, and 320-pixel layouts, outage/recovery, unavailable telemetry, keyboard focus, and automated WCAG A/AA rules. Reports, screenshots, and accessibility results are saved under `work/` and attached to GitHub workflow runs. Automated accessibility scans do not establish full WCAG conformance.
+On Linux, use `npx playwright install --with-deps chromium` to install browser system dependencies too. The suite starts loopback servers on ports 8792–8794 and checks the original lab plus the live and demo application across desktop, 375-pixel, and 320-pixel layouts. Application workflows cover service configuration, incident notes, lost replies, deliberate retries, backup and CSV downloads, stale health, keyboard focus, and selected WCAG A/AA rules. Reports and screenshots are attached to GitHub workflow runs. Automated accessibility scans do not establish full WCAG conformance.
 
 ## Cloud deployment
 
@@ -104,7 +132,7 @@ See `docs/operations.md` for recovery and cleanup and `docs/validation.md` for w
 
 To run infrastructure checks without deploying resources, build the example package, then run `terraform fmt -check -recursive terraform`, `terraform -chdir=terraform init -backend=false`, `terraform -chdir=terraform validate`, and `terraform -chdir=terraform test`. The provided test uses mocked providers only. Run `python tests/cloud_smoke.py` after packaging to verify SDK contracts with stubbed S3 responses.
 
-## Architecture
+## AWS dashboard architecture
 
 ```mermaid
 flowchart LR
