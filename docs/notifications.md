@@ -4,6 +4,12 @@ Sentinel's local lab sends actual JSON webhooks for incident opening, escalation
 
 ## Reproduce the failure cases
 
+For a quick test entirely within the notification panel, select **Receiver unavailable**, then **Send test notification**. The result reports the HTTP 503 and shows a pending test record. Restore **Receiver available**, then retry after its displayed due time. With **Lose next reply** armed, a test is accepted but initially unacknowledged; a subsequent retry uses the same reference and the receiver retains one notification. Test messages are labelled `test` and do not create service incidents or change observed health. The action result updates when the latest test is acknowledged, including by the background loop.
+
+Each receiver control confirms its setting and explains the next action. **Retry due deliveries** reports attempted and acknowledged counts, or explains that nothing is pending or due. Failed records remain visible and are not automatically replayed. The current receiver state is shown separately from the last action result.
+
+Local reads and writes share a process lock so polling cannot hold a Windows file open during atomic replacement. A failed background check retains the prior observation and retries on the next tick; it does not silently stop the checking loop. One process must still own each state directory.
+
 Run `python scripts/demo.py`, then open http://127.0.0.1:8791/. In **Notification delivery lab**, select **Receiver unavailable**, then **Slow response**, **API outage**, and **Recover** above. The services recover while three notifications remain queued. Restore **Receiver available** and use **Retry due deliveries** after the next due time. Opening, escalation, and recovery reach the receiver in order.
 
 Next select **Lose next reply**, then trigger a fresh **API outage**. The receiver saves the notification and closes its connection without a reply. Sentinel leaves the delivery pending and retries the identical event ID. The receiver retains one notification with two accepted requests, and Sentinel records two attempts before marking it delivered. **Recover** sends a separate recovery event linked to the same incident.

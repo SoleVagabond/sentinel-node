@@ -51,7 +51,7 @@ def validate_state(state):
         if not isinstance(row, dict) or row.get('status') not in ('pending', 'delivered', 'failed'):
             raise ValueError('Invalid delivery record.')
         event = row.get('event')
-        if not isinstance(event, dict) or event.get('type') not in ('opened', 'escalated', 'recovered'):
+        if not isinstance(event, dict) or event.get('type') not in ('opened', 'escalated', 'recovered', 'test'):
             raise ValueError('Invalid delivery event.')
         if not all(isinstance(event.get(key), str) and event[key] for key in ('id', 'incident_id', 'endpoint_id', 'name', 'opened_at', 'observed_at')):
             raise ValueError('Missing event fields.')
@@ -108,6 +108,23 @@ def reconcile(state, snapshot):
     for incident in state['checkpoint']['incidents']:
         prior = old.get((incident['endpoint_id'], incident['opened_at']), {})
         incident['alert_escalated'] = prior.get('alert_escalated', False) or incident['severity'] == 'Red'
+    return trim(state)
+
+
+def enqueue_test(state, now=None):
+    """Queue an explicitly labelled lab message without altering service observations."""
+    state = validate_state(state)
+    observed_at = (now or datetime.now(timezone.utc)).isoformat()
+    event = {'id': identity('notification-test', observed_at, 'test'),
+             'incident_id': identity('notification-test', observed_at), 'type': 'test',
+             'endpoint_id': 'notification-test', 'name': 'Notification test',
+             'opened_at': observed_at, 'observed_at': observed_at, 'severity': 'Unknown',
+             'reason': 'Manual local delivery test; no service incident.'}
+    if any(row['event']['id'] == event['id'] for row in state['deliveries']):
+        raise ValueError('Duplicate test notification timestamp.')
+    state['deliveries'].append({'event': event, 'status': 'pending', 'attempts': 0,
+                                'next_attempt_at': observed_at, 'last_attempt_at': None,
+                                'delivered_at': None, 'last_error': None})
     return trim(state)
 
 

@@ -162,3 +162,57 @@ test('unavailable or malformed optional delivery history leaves health trustwort
     await page.unroute('**/alerts.json');
   }
 });
+
+test('notification controls explain every action and send an independent real test', async ({ page, request }, testInfo) => {
+  await page.getByRole('button', { name: 'Receiver available', exact: true }).click();
+  await expect(page.locator('#notification-action')).toContainText('Receiver available.');
+  await expect.poll(async () => {
+    await request.post('/api/retry', { data: {} });
+    return (await (await request.get('/alerts.json')).json()).summary.pending;
+  }).toBe(0);
+  await page.getByRole('button', { name: 'Retry due deliveries', exact: true }).click();
+  await expect(page.locator('#notification-action')).toContainText('No pending notifications to retry.');
+  await page.getByRole('button', { name: 'Receiver unavailable', exact: true }).click();
+  await expect(page.locator('#notification-action')).toContainText('Receiver unavailable. Send a test notification');
+  await expect(page.locator('#receiver-state')).toContainText('Current receiver: unavailable.');
+  await page.getByRole('button', { name: 'Send test notification', exact: true }).click();
+  await expect(page.locator('#notification-action')).toContainText('Test notification queued. HTTP 503.');
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeEnabled();
+  await expect(status(page)).toHaveText('All services operational');
+  const queued = await (await request.get('/alerts.json')).json();
+  const eventId = queued.deliveries.at(-1).event.id;
+  expect(queued.deliveries.at(-1).event.type).toBe('test');
+  await page.getByRole('button', { name: 'Receiver available', exact: true }).click();
+  await expect.poll(async () => {
+    await page.getByRole('button', { name: 'Retry due deliveries', exact: true }).click();
+    return (await (await request.get('/alerts.json')).json()).deliveries.find(row => row.event.id === eventId).status;
+  }).toBe('delivered');
+  await expect(page.locator('#notification-action')).toContainText(/Retried|No pending/);
+  const received = await (await request.get('/alerts.json')).json();
+  expect(received.receipts.filter(row => row.event.id === eventId)).toHaveLength(1);
+  await expect(page.locator('#deliveries-list')).toContainText('Test · Notification test');
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: testInfo.outputPath('notification-controls.png'), fullPage: true });
+});
+
+test('test button exercises lost acknowledgement and updates its result after automatic retry', async ({ page, request }) => {
+  await page.getByRole('button', { name: 'Lose next reply', exact: true }).click();
+  await expect(page.locator('#notification-action')).toContainText('Next reply will be lost after acceptance.');
+  await page.getByRole('button', { name: 'Send test notification', exact: true }).click();
+  await expect(page.locator('#notification-action')).toContainText('Test notification queued. No acknowledgement.');
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeEnabled();
+  const initial = await (await request.get('/alerts.json')).json();
+  const eventId = initial.deliveries.at(-1).event.id;
+  await expect.poll(async () => {
+    await request.post('/api/retry', { data: {} });
+    return (await (await request.get('/alerts.json')).json()).deliveries.find(row => row.event.id === eventId).status;
+  }).toBe('delivered');
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(page.locator('#notification-action')).toHaveText('Test notification delivered and acknowledged by the local receiver.');
+  await expect(status(page)).toHaveText('All services operational');
+  const received = await (await request.get('/alerts.json')).json();
+  const receipts = received.receipts.filter(row => row.event.id === eventId);
+  expect(receipts).toHaveLength(1);
+  expect(receipts[0].requests).toBe(2);
+  expect(received.deliveries.find(row => row.event.id === eventId).attempts).toBe(2);
+});

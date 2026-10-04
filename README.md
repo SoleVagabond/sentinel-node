@@ -34,6 +34,8 @@ The local server binds only to `127.0.0.1`. Scenario controls exist only in this
 
 ## What it demonstrates
 
+In the notification panel, choose a receiver state and use **Send test notification** to exercise delivery directly. Each button reports its result; Retry explains when nothing is pending or due. Tests leave service health unchanged. Try **Lose next reply**, send a test, and observe its single receiver record after the retry succeeds.
+
 - Concurrent, configurable HTTP probes with verified TLS for HTTPS URLs, timeout/error classification, and expected response codes.
 - Incident opening, updates without duplication, and recovery on a healthy observation.
 - Durable incident webhooks with bounded retries, receiver deduplication, and delivery history. The local lab demonstrates receiver failure and a lost reply after acceptance; see [notification delivery](docs/notifications.md) and its [recorded evidence](docs/evidence/notification-delivery.json).

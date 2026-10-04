@@ -1,4 +1,5 @@
 from contextlib import nullcontext
+from concurrent.futures import ThreadPoolExecutor
 import importlib.util
 import json
 from pathlib import Path
@@ -20,6 +21,24 @@ ENDPOINT = {'id': 'api', 'name': 'API', 'url': 'http://127.0.0.1/health', 'timeo
 
 
 class MonitorTests(unittest.TestCase):
+    def test_local_store_concurrent_readers_and_writes_remain_complete(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = monitor.LocalStore(directory)
+            store.write('state.json', {'sequence': 0, 'payload': 'x' * 4096})
+            def reader():
+                for _ in range(300):
+                    row = store.read('state.json')
+                    self.assertIsInstance(row['sequence'], int)
+                    self.assertEqual(row['payload'], 'x' * 4096)
+            def writer():
+                for sequence in range(100):
+                    store.write('state.json', {'sequence': sequence, 'payload': 'x' * 4096})
+            with ThreadPoolExecutor(max_workers=3) as pool:
+                futures = [pool.submit(reader), pool.submit(reader), pool.submit(writer)]
+                for future in futures:
+                    future.result(timeout=10)
+            self.assertEqual(store.read('state.json')['sequence'], 99)
+
     def probe(self, code=200, latency=.05, failure=None, endpoint=None):
         clock = iter([0, latency])
         def opener(request, timeout):

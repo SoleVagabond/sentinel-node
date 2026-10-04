@@ -11,6 +11,7 @@ import math
 import os
 from pathlib import Path
 import socket
+import threading
 import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -127,18 +128,22 @@ class LocalStore:
     def __init__(self, directory):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
+        self.lock = threading.Lock()
 
     def read(self, key):
-        path = self.directory / key
-        if not path.exists():
-            return {}
-        return json.loads(path.read_text(encoding='utf-8'))
+        # Windows cannot replace a file while this process has it open for reading.
+        with self.lock:
+            path = self.directory / key
+            if not path.exists():
+                return {}
+            return json.loads(path.read_text(encoding='utf-8'))
 
     def write(self, key, data):
-        path = self.directory / key
-        temporary = path.with_suffix('.tmp')
-        temporary.write_text(json.dumps(data, indent=2), encoding='utf-8')
-        temporary.replace(path)
+        with self.lock:
+            path = self.directory / key
+            temporary = path.with_suffix('.tmp')
+            temporary.write_text(json.dumps(data, indent=2), encoding='utf-8')
+            temporary.replace(path)
 
 
 class S3Store:

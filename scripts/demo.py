@@ -15,7 +15,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'backend'))
 from monitor import build_snapshot, collect, extend_history, LocalStore
-from alerts import STATE_KEY, Webhook, dispatch, reconcile, validate_state, public_view
+from alerts import STATE_KEY, Webhook, dispatch, reconcile, validate_state, public_view, enqueue_test
 
 SCENARIOS = ('healthy', 'degraded', 'outage', 'stale', 'recovered')
 
@@ -51,7 +51,21 @@ class DemoState:
 
     def retry(self):
         with self.collection_lock:
-            return dispatch(self.store, self.sender, base_delay=1)
+            before = validate_state(self.store.read(STATE_KEY))
+            attempts = {row['event']['id']: row['attempts'] for row in before['deliveries']}
+            after = dispatch(self.store, self.sender, base_delay=1)
+            attempted = [row for row in after['deliveries'] if row['attempts'] > attempts.get(row['event']['id'], 0)]
+            return {'ok': True, 'attempted': len(attempted),
+                    'acknowledged': sum(row['status'] == 'delivered' for row in attempted),
+                    'summary': public_view(after)['summary']}
+
+    def send_test(self):
+        with self.collection_lock:
+            queued = enqueue_test(self.store.read(STATE_KEY))
+            event_id = queued['deliveries'][-1]['event']['id']
+            self.store.write(STATE_KEY, queued)
+            after = dispatch(self.store, self.sender, base_delay=1)
+            return next(row for row in after['deliveries'] if row['event']['id'] == event_id)
 
     def alerts(self):
         with self.receiver_lock:
@@ -132,7 +146,7 @@ class DemoHandler(SimpleHTTPRequestHandler):
             self.json_response({'error': 'Not found'}, 404)
 
     def do_POST(self):
-        if self.path not in ('/api/scenario', '/api/receiver', '/api/retry', '/api/notifications'):
+        if self.path not in ('/api/scenario', '/api/receiver', '/api/retry', '/api/test-notification', '/api/notifications'):
             self.json_response({'error': 'Not found'}, 404)
             return
         origin = self.headers.get('Origin')
@@ -156,8 +170,9 @@ class DemoHandler(SimpleHTTPRequestHandler):
                     state.receiver_mode = payload['mode']
                 self.json_response({'ok': True})
             elif self.path == '/api/retry':
-                state.retry()
-                self.json_response({'ok': True})
+                self.json_response(state.retry())
+            elif self.path == '/api/test-notification':
+                self.json_response({'ok': True, 'delivery': state.send_test()})
             else:
                 if not isinstance(payload.get('id'), str) or len(payload['id']) != 64 or self.headers.get('Idempotency-Key') != payload['id']:
                     raise ValueError('A matching event ID is required.')
@@ -170,6 +185,8 @@ class DemoHandler(SimpleHTTPRequestHandler):
                     self.json_response({'accepted': code == 200}, code)
         except (ValueError, KeyError, TypeError):
             self.json_response({'error': 'Choose a valid local lab request.'}, 400)
+        except OSError:
+            self.json_response({'error': 'Local state could not be saved. Inspect the server and refresh before retrying.'}, 500)
 
 
 def create_server(port=8791, directory=None):
@@ -190,8 +207,12 @@ def main():
     stopping = threading.Event()
     def sample_loop():
         while not stopping.is_set():
-            server.demo_state.sample()
-            server.demo_state.retry()
+            try:
+                server.demo_state.sample()
+                server.demo_state.retry()
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                # Keep old observations and durable work; the next tick can recover.
+                print(f'Local check failed ({type(error).__name__}); retrying on the next tick.', flush=True)
             stopping.wait(5)
     worker = threading.Thread(target=sample_loop, daemon=True)
     worker.start()

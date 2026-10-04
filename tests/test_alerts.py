@@ -8,6 +8,7 @@ import tempfile
 import threading
 import unittest
 from unittest.mock import patch
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'backend'))
@@ -39,6 +40,19 @@ class OutboxTests(unittest.TestCase):
 
     def test_healthy_session_has_no_notifications(self):
         self.assertEqual(self.save(snapshot('Green'))['deliveries'], [])
+
+    def test_explicit_test_preserves_checkpoint_and_refuses_full_queue(self):
+        original = self.save(snapshot('Green'))
+        queued = alerts.enqueue_test(original, now=NOW)
+        self.assertEqual(queued['checkpoint'], original['checkpoint'])
+        self.assertEqual(original['deliveries'], [])
+        self.assertEqual(queued['deliveries'][0]['event']['type'], 'test')
+        for tick in range(1, alerts.PENDING_LIMIT):
+            queued = alerts.enqueue_test(queued, now=NOW + timedelta(microseconds=tick))
+        before = deepcopy(queued)
+        with self.assertRaisesRegex(ValueError, 'queue full'):
+            alerts.enqueue_test(queued, now=NOW + timedelta(seconds=1))
+        self.assertEqual(queued, before)
 
     def test_open_escalate_recover_once_and_link_to_same_incident(self):
         slow = snapshot('Yellow')
@@ -250,6 +264,32 @@ class ReceiverIntegrationTests(unittest.TestCase):
         self.server.server_close()
         self.thread.join(3)
         self.server.temporary_state.cleanup()
+
+    def test_test_notification_http_controls_queue_retry_and_deduplicate_without_incidents(self):
+        def post(route, data):
+            request = Request(f'http://127.0.0.1:{self.server.server_port}{route}',
+                              data=json.dumps(data).encode(), headers={'Content-Type': 'application/json'})
+            with urlopen(request, timeout=5) as response:
+                return json.load(response)
+        self.state.sample()
+        before = deepcopy(self.state.snapshot)
+        post('/api/receiver', {'mode': 'unavailable'})
+        first = post('/api/test-notification', {})['delivery']
+        self.assertEqual((first['event']['type'], first['status'], first['last_error']), ('test', 'pending', 'HTTP 503'))
+        self.assertEqual(post('/api/retry', {})['attempted'], 0)
+        post('/api/receiver', {'mode': 'available'})
+        alerts.dispatch(self.state.store, self.state.sender, now=alerts.timestamp(first['next_attempt_at']), base_delay=1)
+        post('/api/receiver', {'mode': 'lose-next-response'})
+        second = post('/api/test-notification', {})['delivery']
+        self.assertEqual((second['status'], second['last_error']), ('pending', 'No acknowledgement'))
+        self.assertNotEqual(first['event']['id'], second['event']['id'])
+        alerts.dispatch(self.state.store, self.state.sender, now=alerts.timestamp(second['next_attempt_at']), base_delay=1)
+        view = self.state.alerts()
+        self.assertEqual(view['summary'], {'pending': 0, 'delivered': 2, 'failed': 0})
+        self.assertEqual([row['requests'] for row in view['receipts']], [1, 2])
+        self.assertEqual(post('/api/retry', {})['summary']['pending'], 0)
+        self.assertEqual(self.state.snapshot, before)
+        self.assertEqual(self.state.snapshot['incidents'], [])
 
     def test_real_http_open_escalation_recovery_receipts(self):
         self.state.set_scenario('degraded')
