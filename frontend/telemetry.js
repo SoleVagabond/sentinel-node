@@ -21,7 +21,22 @@
     if (data.endpoints.some(item => item.status === 'Yellow')) return { state: 'degraded', label: 'Service response degraded', age: Math.max(0, age) };
     return { state: 'healthy', label: 'All services operational', age: Math.max(0, age) };
   }
-  const api = { validateSnapshot, health };
+  function historyForSnapshot(data, snapshot) {
+    if (!data || data.schema_version !== 1 || !Array.isArray(data.samples) || data.samples.length > 60) throw new Error('Invalid history format');
+    for (const sample of data.samples) {
+      if (!sample || !Number.isFinite(Date.parse(sample.timestamp)) || !Array.isArray(sample.endpoints) || sample.endpoints.length < 1 || sample.endpoints.length > 8) throw new Error('Invalid history sample');
+      const ids = new Set();
+      for (const row of sample.endpoints) {
+        if (!row || typeof row.id !== 'string' || !row.id.trim() || ids.has(row.id) || !['Green', 'Yellow', 'Red'].includes(row.status) || !Number.isFinite(row.latency_ms) || row.latency_ms < 0 || (row.status_code !== null && (!Number.isInteger(row.status_code) || row.status_code < 100 || row.status_code > 599))) throw new Error('Invalid history endpoint');
+        ids.add(row.id);
+      }
+    }
+    const completedAt = Date.parse(snapshot.last_updated);
+    if (!Number.isFinite(completedAt)) throw new Error('Invalid snapshot timestamp');
+    // History and current status are separate writes. Never imply a newer check completed.
+    return data.samples.filter(sample => Date.parse(sample.timestamp) <= completedAt);
+  }
+  const api = { validateSnapshot, health, historyForSnapshot };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.SentinelTelemetry = api;
 })(typeof window !== 'undefined' ? window : this);

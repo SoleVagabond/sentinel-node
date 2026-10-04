@@ -98,8 +98,10 @@
       if (results[0].status !== 'fulfilled') throw new Error('Telemetry request failed');
       snapshot = SentinelTelemetry.validateSnapshot(results[0].value);
       offline = false;
-      const candidate = results[1].status === 'fulfilled' ? results[1].value.samples : null;
-      history = Array.isArray(candidate) && candidate.every(sample => Number.isFinite(Date.parse(sample.timestamp)) && Array.isArray(sample.endpoints) && sample.endpoints.every(row => ['Green', 'Yellow', 'Red'].includes(row.status) && Number.isFinite(row.latency_ms))) ? candidate : [];
+      // Missing or malformed optional history must not invalidate a valid current observation.
+      try {
+        history = results[1].status === 'fulfilled' ? SentinelTelemetry.historyForSnapshot(results[1].value, snapshot) : [];
+      } catch (_) { history = []; }
       if (results[2]?.status === 'fulfilled') setScenarioUI(results[2].value.scenario);
     } catch (_) { offline = true; }
     finally { busy = false; $('refresh-btn').disabled = false; $('refresh-btn').textContent = 'Refresh'; render(); }

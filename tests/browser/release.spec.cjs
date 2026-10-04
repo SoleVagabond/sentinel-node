@@ -75,3 +75,28 @@ test('keyboard navigation reaches the main content and retains control focus', a
   await expect(status(page)).toHaveText('Service outage detected');
   await expect(page.getByRole('button', { name: 'API outage', exact: true })).toBeFocused();
 });
+
+test('optional malformed history does not hide valid current service health', async ({ page }) => {
+  for (const history of [null, { schema_version: 1, samples: [null] }, { schema_version: 1, samples: [{ timestamp: new Date().toISOString(), endpoints: [null] }] }]) {
+    await page.route('**/history.json', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(history) }));
+    await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+    await expect(status(page)).toHaveText('All services operational');
+    await expect(page.locator('#healthy-count')).toHaveText('4');
+    await expect(page.locator('.history-caption')).toHaveText(Array(4).fill('History unavailable'));
+    await page.unroute('**/history.json');
+  }
+});
+
+test('a partial history write cannot display checks newer than the completed snapshot', async ({ page }) => {
+  const response = await page.request.get('/status_data.json');
+  const snapshot = await response.json();
+  const sample = timestamp => ({ timestamp, endpoints: snapshot.endpoints.map(row => ({ id: row.id, status: row.status, latency_ms: row.latency_ms, status_code: row.status_code })) });
+  const current = sample(snapshot.last_updated);
+  const future = sample(new Date(Date.parse(snapshot.last_updated) + 60000).toISOString());
+  await page.route('**/status_data.json', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(snapshot) }));
+  await page.route('**/history.json', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ schema_version: 1, samples: [current, future] }) }));
+  await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+  await expect(status(page)).toHaveText('All services operational');
+  await expect(page.locator('.history-caption')).toHaveText(Array(4).fill('1/1 recent checks operational'));
+  await expect(page.locator('.sample-history span')).toHaveCount(4);
+});

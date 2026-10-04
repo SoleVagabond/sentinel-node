@@ -6,6 +6,8 @@ Service monitoring with incident history and explicit telemetry freshness. A Pyt
 
 The local incident lab and automated checks are verified. Live AWS deployment is pending; this release does not claim observed cloud uptime. See the [case study](docs/case-study.md) and [verification record](docs/validation.md).
 
+**Explore in your browser:** [Interactive incident replay](https://solevagabond.github.io/lab.html#sentinel/outage/0). It uses recorded local observations and the same freshness logic as the dashboard. For real loopback HTTP checks and scenario controls, run the local lab below.
+
 ![Local incident lab showing an HTTP service outage](docs/evidence/outage.png)
 
 [Stale monitoring screenshot](docs/evidence/stale.png) · [Retained recovery timeline](docs/evidence/recovery.png) · [Recorded local incident sequence](docs/evidence/local-incident-sequence.json)
@@ -36,6 +38,7 @@ The local server binds only to `127.0.0.1`. Scenario controls exist only in this
 - Incident opening, updates without duplication, and recovery on a healthy observation.
 - Bounded sampled history: 60 snapshots and up to 100 retained incidents, keeping active incidents.
 - Honest freshness: stale or unavailable data never displays current operational counts.
+- Optional history failures do not invalidate a valid current observation. History newer than the completed snapshot is withheld until a matching current check arrives.
 - A dashboard with keyboard-accessible controls, reduced-motion support, visible status text, and responsive layouts.
 - Clean packaging, automated checks, and infrastructure configuration for a private S3 origin behind CloudFront.
 
