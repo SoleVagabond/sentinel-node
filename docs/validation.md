@@ -2,9 +2,25 @@
 
 October 4, 2026
 
-## Notification feature: local verification
+## Notification release: 90 checks passed
 
-The new durable outbox and receiver fixtures passed 45 Python checks on Windows, including actual HTTP delivery and connection loss after a receipt was saved. The six-step [notification recording](evidence/notification-delivery.json) was regenerated with real retry due times and verified five unique notifications from six accepted requests. Ten frontend telemetry checks and the JavaScript syntax check also passed locally. Fresh Linux browser, package, and infrastructure results will be recorded after the published workflow completes.
+The notification release passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37179009669) at commit `5b69458` on a fresh Linux checkout. All three jobs succeeded. The backend also passed locally on Windows. No AWS resource or external notification recipient was used.
+
+| Current release check | Result |
+| --- | --- |
+| Python unit and real loopback HTTP integration | 45 passed |
+| Frontend telemetry validation and freshness | 10 passed |
+| Packaged SDK/S3 contracts with stubbed responses | 4 passed |
+| Browser workflows across desktop, 375px, and 320px | 30 passed |
+| Mocked infrastructure security scenario | 1 passed |
+| JavaScript syntax, clean packaging, Terraform formatting/schema validation | Passed |
+| Independent notification recording | Six actual HTTP stages verified; five unique notifications from six accepted requests |
+
+Notification checks exercise opening/escalation/recovery, ordered delivery, due-time backoff, retry exhaustion, permanent failures, restart recovery, checkpoint preservation after a partial telemetry write, bounded retention, queue saturation without eviction, malformed state, bearer-token redirect protection, and real connection loss after acceptance. The browser confirms that unavailable delivery history or a failed receiver does not hide valid current service health. It retains keyboard, layout, and automated accessibility coverage.
+
+The lost-reply browser test waits for the completed incident observation before selecting its delivery, avoiding accidental inspection of an earlier notification. Receiver changes also disable scenario controls until the setting has finished. The passing suite has no automatic test retries or suppressed scan rules.
+
+The [six-step notification recording](evidence/notification-delivery.json) uses real retry due times, not a simulated clock. Its final five unique receiver notifications come from six accepted requests. The [delivery design and operating limits](notifications.md) distinguish acknowledgement, finite retries, receiver deduplication, and remaining cloud integration.
 
 ## Earlier history-handling release
 
