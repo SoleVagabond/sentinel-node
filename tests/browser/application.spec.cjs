@@ -76,7 +76,7 @@ test('service setup, edit, pause, resume, removal, and history work through the 
   await page.getByRole('button', { name: 'Services', exact: true }).click();
   await page.getByRole('button', { name: 'Add service', exact: true }).click();
   await page.getByRole('textbox', { name: 'Service name', exact: true }).fill('Shipping worker');
-  await page.getByRole('textbox', { name: 'HTTP URL', exact: true }).fill('http://127.0.0.1:8793/fixtures/worker');
+  await page.getByRole('textbox', { name: 'Website URL', exact: true }).fill('http://127.0.0.1:8793/fixtures/worker');
   await page.getByRole('button', { name: 'Save service', exact: true }).click();
   await expect(serviceRow(page, 'Shipping worker')).toBeVisible();
   await expect(page.getByRole('dialog')).not.toBeVisible();
@@ -216,11 +216,14 @@ test('live mode starts empty and configures a real loopback service without demo
   await page.goto('http://127.0.0.1:8794/');
   await expect(page.locator('#demo-banner')).toBeHidden();
   await expect(page.locator('#health-label')).toHaveText('Add your first service');
-  await page.getByRole('button', { name: 'Services', exact: true }).click();
-  await page.getByRole('button', { name: 'Add service', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Check now', exact: true })).toBeDisabled();
+  await expect(page.locator('#onboarding')).toBeVisible();
+  await page.getByRole('button', { name: 'Add your first service', exact: true }).click();
+  await expect(page.locator('#service-advanced')).not.toHaveAttribute('open');
   await page.getByRole('textbox', { name: 'Service name', exact: true }).fill('Owned verification endpoint');
-  await page.getByRole('textbox', { name: 'HTTP URL', exact: true }).fill('http://127.0.0.1:8793/fixtures/worker');
+  await page.getByRole('textbox', { name: 'Website URL', exact: true }).fill('http://127.0.0.1:8793/fixtures/worker');
   await page.getByRole('button', { name: 'Save service', exact: true }).click();
+  await page.getByRole('button', { name: 'Services', exact: true }).click();
   await expect(serviceRow(page, 'Owned verification endpoint')).toBeVisible();
   await checked(page);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
@@ -230,4 +233,123 @@ test('live mode starts empty and configures a real loopback service without demo
   await serviceRow(page, 'Owned verification endpoint').getByRole('button', { name: 'Remove service', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Remove service', exact: true }).click();
   await expect(serviceRow(page, 'Owned verification endpoint')).toHaveCount(0);
+});
+
+test('advanced check settings are optional and custom values survive edit and polling', async ({ page, request }) => {
+  await page.getByRole('button', { name: 'Services', exact: true }).click();
+  await page.getByRole('button', { name: 'Add service', exact: true }).click();
+  await expect(page.locator('#service-advanced')).not.toHaveAttribute('open');
+  await page.getByRole('textbox', { name: 'Service name', exact: true }).fill('Custom checks');
+  await page.getByRole('textbox', { name: 'Website URL', exact: true }).fill('http://127.0.0.1:8793/fixtures/worker');
+  await page.locator('#service-advanced summary').click();
+  await page.getByRole('spinbutton', { name: 'Timeout in seconds', exact: true }).fill('8');
+  await page.getByRole('spinbutton', { name: 'Slow response threshold in ms', exact: true }).fill('2000');
+  await page.getByRole('textbox', { name: 'Expected HTTP codes', exact: true }).fill('200, 204');
+  await page.getByRole('button', { name: 'Save service', exact: true }).click();
+  const row = serviceRow(page, 'Custom checks');
+  await expect(row).toContainText('timeout 8s');
+  await row.getByRole('button', { name: 'Edit service', exact: true }).click();
+  await expect(page.locator('#service-advanced')).toHaveAttribute('open', '');
+  await expect(page.getByRole('spinbutton', { name: 'Timeout in seconds', exact: true })).toHaveValue('8');
+  await page.getByRole('textbox', { name: 'Service name', exact: true }).fill('Unsaved custom draft');
+  await page.waitForResponse(response => response.url().endsWith('/api/state'));
+  await expect(page.getByRole('textbox', { name: 'Service name', exact: true })).toHaveValue('Unsaved custom draft');
+  await expect(page.getByRole('spinbutton', { name: 'Timeout in seconds', exact: true })).toHaveValue('8');
+  expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
+  await page.keyboard.press('Escape');
+  const saved = (await state(request)).config.services.find(item => item.name === 'Custom checks');
+  expect(saved.expected_statuses).toEqual([200, 204]);
+});
+
+test('notification actions explain paused settings and unsaved drafts', async ({ page }) => {
+  await page.getByRole('button', { name: 'Notifications', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Cancel pending deliveries', exact: true })).toBeDisabled();
+  await page.getByRole('checkbox', { name: 'Enable notification delivery', exact: true }).uncheck();
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeDisabled();
+  await expect(page.locator('#notification-guidance')).toContainText('Save or discard');
+  await page.getByRole('button', { name: 'Save receiver settings', exact: true }).click();
+  await expect(page.locator('#notification-guidance')).toContainText('Enable delivery');
+  await page.getByRole('checkbox', { name: 'Enable notification delivery', exact: true }).check();
+  await page.locator('#webhook-form').getByRole('button', { name: 'Discard changes', exact: true }).click();
+  await expect(page.getByRole('checkbox', { name: 'Enable notification delivery', exact: true })).not.toBeChecked();
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeDisabled();
+  await page.getByRole('checkbox', { name: 'Enable notification delivery', exact: true }).check();
+  await page.getByRole('button', { name: 'Save receiver settings', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeEnabled();
+});
+
+test('retry countdown enables only eligible messages and still allows cancellation', async ({ page, request }) => {
+  await post(request, 'demo', { receiver: 'unavailable' });
+  await post(request, 'delivery/test', {});
+  const current = await state(request), time = new Date();
+  const pending = current.deliveries.find(row => row.status === 'pending');
+  expect(pending).toBeTruthy();
+  pending.next_attempt_at = new Date(time.getTime() + 60000).toISOString();
+  await page.clock.install({ time });
+  await page.route('**/api/state', route => route.fulfill({ json: current }));
+  await page.goto('/#notifications');
+  await page.clock.pauseAt(time);
+  await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Cancel pending deliveries', exact: true })).toBeEnabled();
+  await expect(page.locator('#retry-help')).toContainText('Next automatic retry');
+  await page.clock.runFor(60000);
+  await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeEnabled();
+  await expect(page.locator('#retry-help')).toContainText('ready for retry');
+});
+
+test('overview shortcuts, automatic history filters, and keyboard chart inspection work', async ({ page }) => {
+  await page.getByRole('button', { name: /^Open incidents \d+ Investigate/ }).click();
+  await expect(page.getByRole('combobox', { name: 'Show incidents', exact: true })).toHaveValue('open');
+  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await page.getByRole('button', { name: /^Pending deliveries \d+ View waiting messages/ }).click();
+  await expect(page.getByRole('combobox', { name: 'Show deliveries', exact: true })).toHaveValue('pending');
+  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await page.getByRole('button', { name: 'Orders API', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: 'Service', exact: true })).toHaveValue('api');
+  await expect(page.locator('#history-rows')).toContainText('Orders API');
+  const slider = page.getByRole('slider', { name: 'Inspect a recorded check', exact: true });
+  await slider.focus(); await page.keyboard.press('Home');
+  await expect(slider).toHaveValue('0');
+  await page.keyboard.press('ArrowRight');
+  await expect(slider).toHaveValue('1');
+  await expect(page.locator('#chart-reading')).toContainText('received an HTTP reply');
+  await expect(page.locator('.chart-x span')).toHaveCount(3);
+  await expect(page.locator('.chart-y')).toContainText('ms');
+  await page.getByRole('combobox', { name: 'Service', exact: true }).selectOption('worker');
+  await expect(page.locator('#history-rows')).toContainText('Worker health');
+  await expect(page.locator('#history-rows')).not.toContainText('Orders API');
+  await expect(page.getByRole('link', { name: 'Export observations CSV', exact: true })).toHaveAttribute('href', /service=worker/);
+});
+
+test('chart gaps and rapid filters never present an old service as the new result', async ({ page }) => {
+  let releaseOld;
+  const held = new Promise(resolve => { releaseOld = resolve; });
+  const start = Date.now() - 300000;
+  const sample = (offset, latency, code) => ({ last_updated: new Date(start + offset).toISOString(), endpoints: [{ name: 'Worker health', id: 'worker', status: code === null ? 'Red' : 'Green', status_code: code, latency_ms: latency, observer_error: false }] });
+  const worker = { limit: 500, samples: [sample(0, 100, 200), sample(10000, 0, null), sample(120000, 300, 200)] };
+  await page.route('**/api/history?*', async route => {
+    if (new URL(route.request().url()).searchParams.get('service') === 'api') {
+      await held;
+      await route.fulfill({ json: { limit: 500, samples: [{ ...sample(0, 99, 200), endpoints: [{ ...sample(0, 99, 200).endpoints[0], name: 'Orders API', id: 'api' }] }] } });
+    } else await route.fulfill({ json: worker });
+  });
+  await page.getByRole('button', { name: 'History', exact: true }).click();
+  await expect(page.locator('#chart-reading')).toContainText('300 ms');
+  const oldRequest = page.waitForRequest(request => request.url().includes('api/history?') && new URL(request.url()).searchParams.get('service') === 'api');
+  await page.getByRole('combobox', { name: 'Service', exact: true }).selectOption('api');
+  await oldRequest;
+  await expect(page.getByRole('link', { name: 'Export observations CSV', exact: true })).toHaveAttribute('aria-disabled', 'true');
+  await page.getByRole('combobox', { name: 'Service', exact: true }).selectOption('worker');
+  await expect(page.locator('#history-rows')).toContainText('Worker health');
+  const finishedOld = page.waitForResponse(response => response.url().includes('api/history?') && new URL(response.url()).searchParams.get('service') === 'api');
+  releaseOld(); await finishedOld;
+  await expect(page.locator('#history-rows')).not.toContainText('Orders API');
+  await expect(page.getByRole('link', { name: 'Export observations CSV', exact: true })).toHaveAttribute('href', /service=worker/);
+  const slider = page.getByRole('slider', { name: 'Inspect a recorded check', exact: true });
+  await slider.focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#chart-reading')).toContainText('No HTTP reply; response time unavailable');
+  await expect(page.locator('#history-summary')).toContainText('200 ms average HTTP response');
+  await expect(page.locator('.chart path')).toHaveAttribute('d', /^M[^M]+M/);
 });
