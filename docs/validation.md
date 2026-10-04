@@ -2,6 +2,29 @@
 
 October 4, 2026
 
+## Single-operator application 1.0: 137 checks passed
+
+The application release passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37183702034) at commit `7a75894`. All three jobs succeeded on a fresh Linux checkout. All 65 Python checks and 10 frontend checks also passed locally on Windows. No AWS resource or external notification recipient was used.
+
+| Release check | Result |
+| --- | --- |
+| Python unit and real loopback HTTP integration | 65 passed |
+| Frontend telemetry validation and freshness | 10 passed |
+| Packaged SDK/S3 contracts using stubbed responses | 4 passed |
+| Desktop, 375px, and 320px browser workflows | 57 passed |
+| Mocked infrastructure security scenario | 1 passed |
+| JavaScript syntax, portable application packaging, Terraform format/schema validation | Passed |
+
+The 17 added Python checks verify service creation/edit/pause/resume/removal, validation and revision conflicts, local origin/host/session guards, acknowledgement without fictitious recovery, stopped monitoring without a recovery notification, transactional rollback, actual lost-reply deduplication, failed-delivery replay with the original ID and retained attempt counts, pending-receiver change protection, disabled-delivery transitions, scheduler recovery, exclusive process ownership, same-directory restart persistence, consistent backup/restoration, filtered CSV history, empty live onboarding, and a reproducible archive that actually serves its packaged dashboard.
+
+The 21 added browser scenarios exercise seven application journeys at three sizes: freshness expiry, service configuration, incident response and retained notes, lost replies/cancellation/replay, persisted settings and real backup/CSV downloads, keyboard/accessibility/layout across all six workspaces, and live mode configuring an actual loopback endpoint without demonstration controls. The original 36 incident-lab scenarios remain passing.
+
+The first application browser run passed 55 of 57 scenarios and found a history table without keyboard access at both phone widths. The scroll container now has a named region and keyboard focus; the passing suite also verifies that an arrow key moves the table horizontally. No accessibility rules were suppressed and no automatic test retries were enabled.
+
+Manual Windows browser verification completed HTTP 503 → acknowledged incident with an investigation note → confirmed recovery, then a notification accepted before its reply was lost and acknowledged after a second attempt using the same reference. Saved history and the actual new dashboard were inspected. The portable archive was restarted against its retained workspace. A separate live workspace starts empty, without fixture controls, and is available for operator configuration.
+
+The [application guide](application.md) documents installation/run commands, private storage, retention, notification semantics, SSH access, backups, restoration, and operating limits. The [release scope](application-scope.md) is one operator on a computer or server. The archive needs Python 3.13; it is not a standalone executable or hosted account-based service. The earlier static replay and notification recording remain unchanged evidence. Live AWS operation, customer traffic, installed process supervision, and commercial uptime are not claimed.
+
 ## Notification controls and Windows recovery: 99 checks passed
 
 The notification control fix passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37180161026) at commit `f12c89a` on a fresh Linux checkout. All three jobs succeeded. All 48 backend tests also passed locally on Windows. No AWS resource or external notification recipient was used.

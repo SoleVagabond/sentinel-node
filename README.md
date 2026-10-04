@@ -36,7 +36,7 @@ python work/sentinel.pyz --demo
 
 The reproducible `.pyz` contains the program and dashboard. Copy it to a computer with Python 3.13 and run `python sentinel.pyz` for a live workspace. The [Project checks workflow](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml) publishes this package as the `sentinel-application` artifact after its application checks pass. No Node.js or cloud account is required to run it.
 
-![Local incident lab showing an HTTP service outage](docs/evidence/outage.png)
+![Original local incident lab showing an HTTP service outage](docs/evidence/outage.png)
 
 [Stale monitoring screenshot](docs/evidence/stale.png) · [Retained recovery timeline](docs/evidence/recovery.png) · [Recorded local incident sequence](docs/evidence/local-incident-sequence.json)
 
