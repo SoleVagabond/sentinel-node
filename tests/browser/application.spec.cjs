@@ -289,12 +289,13 @@ test('retry countdown enables only eligible messages and still allows cancellati
   pending.next_attempt_at = new Date(time.getTime() + 60000).toISOString();
   await page.clock.install({ time });
   await page.route('**/api/state', route => route.fulfill({ json: current }));
+  // Freeze before navigation, with a future target that permits setup time.
+  await page.clock.pauseAt(new Date(time.getTime() + 10000));
   await page.goto('/#notifications');
-  await page.clock.pauseAt(time);
   await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Cancel pending deliveries', exact: true })).toBeEnabled();
   await expect(page.locator('#retry-help')).toContainText('Next automatic retry');
-  await page.clock.runFor(60000);
+  await page.clock.runFor(50000);
   await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeEnabled();
   await expect(page.locator('#retry-help')).toContainText('ready for retry');
 });
