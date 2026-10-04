@@ -290,7 +290,8 @@ test('retry countdown enables only eligible messages and still allows cancellati
   // Control the displayed deadline while keeping page loading and timers real.
   await page.clock.setFixedTime(time);
   await page.route('**/api/state', route => route.fulfill({ json: current }));
-  await page.goto('/#notifications');
+  // A query change loads a fresh document; changing only the hash keeps old state.
+  await page.goto('/?verify=countdown#notifications');
   await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Cancel pending deliveries', exact: true })).toBeEnabled();
   await expect(page.locator('#retry-help')).toContainText('Next automatic retry');
