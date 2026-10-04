@@ -169,6 +169,11 @@ test('notification controls explain every action and send an independent real te
   await shortcut.click();
   await expect(page.locator('#notification-lab')).toBeFocused();
   await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeInViewport();
+  const actions = page.getByRole('group', { name: 'Send and retry', exact: true });
+  await expect(actions.getByRole('button')).toHaveCount(2);
+  await expect(actions.getByRole('button', { name: 'Send test notification', exact: true })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Receiver availability', exact: true }).getByRole('button')).toHaveCount(2);
+  await expect(page.getByRole('group', { name: 'One-time failure', exact: true }).getByRole('button', { name: 'Lose next reply', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Receiver available', exact: true }).click();
   await expect(page.locator('#notification-action')).toContainText('Receiver available.');
   await expect.poll(async () => {
@@ -203,9 +208,12 @@ test('notification controls explain every action and send an independent real te
 test('test button exercises lost acknowledgement and updates its result after automatic retry', async ({ page, request }) => {
   await page.getByRole('button', { name: 'Lose next reply', exact: true }).click();
   await expect(page.locator('#notification-action')).toContainText('Next reply will be lost after acceptance.');
+  await expect(page.locator('#reply-fault-state')).toContainText('Armed.');
+  await expect(page.getByRole('button', { name: 'Receiver available', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Send test notification', exact: true }).click();
   await expect(page.locator('#notification-action')).toContainText('Test notification queued. No acknowledgement.');
   await expect(page.getByRole('button', { name: 'Send test notification', exact: true })).toBeEnabled();
+  await expect(page.locator('#reply-fault-state')).toContainText('Not armed.');
   const initial = await (await request.get('/alerts.json')).json();
   const eventId = initial.deliveries.at(-1).event.id;
   await expect.poll(async () => {

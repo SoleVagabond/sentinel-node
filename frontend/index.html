@@ -37,12 +37,30 @@
       <section class="incident-section" aria-labelledby="incidents-heading"><div class="section-heading"><h2 id="incidents-heading">Incident timeline</h2><p>Failures, slow responses, and confirmed recovery.</p></div><div id="incidents-list"><p class="empty">No telemetry yet.</p></div></section>
       <section class="incident-section" id="notification-lab" hidden tabindex="-1" aria-labelledby="notifications-heading">
         <div class="section-heading"><h2 id="notifications-heading">Notification delivery lab</h2><p>Real local HTTP delivery · saved across restarts</p></div>
-        <p class="notification-note">Choose a receiver state, then send a test notification here or trigger a service incident above. Tests exercise real local delivery without changing service health.</p>
-        <div class="scenario-buttons" role="group" aria-label="Local notification receiver">
-          <button data-receiver="available" aria-pressed="true">Receiver available</button><button data-receiver="unavailable" aria-pressed="false">Receiver unavailable</button><button data-receiver="lose-next-response" aria-pressed="false">Lose next reply</button><button id="send-test-notification">Send test notification</button><button id="retry-deliveries">Retry due deliveries</button>
+        <p class="notification-note">Send a local test or adjust the receiver settings below. Tests exercise real delivery without changing service health.</p>
+        <div class="notification-actions notification-control" role="group" aria-labelledby="delivery-actions-heading">
+          <h3 id="delivery-actions-heading">Send and retry</h3>
+          <p class="notification-note">Send creates a new notification. Retry attempts queued notifications when their waiting time has ended.</p>
+          <div class="scenario-buttons">
+            <button id="send-test-notification" class="primary-action">Send test notification</button><button id="retry-deliveries">Retry due deliveries</button>
+          </div>
+          <p id="notification-action" class="notification-feedback" role="status">Ready. Send a test notification or adjust the settings below.</p>
         </div>
-        <p id="receiver-state" class="notification-note"></p>
-        <p id="notification-action" class="notification-feedback" role="status">Ready. Choose a receiver state or send a test notification.</p>
+        <div class="notification-settings">
+          <div class="notification-control" role="group" aria-labelledby="receiver-settings-heading">
+            <h3 id="receiver-settings-heading">Receiver availability</h3>
+            <p class="notification-note">Choose whether the receiver can accept notifications. This setting stays in effect until you change it.</p>
+            <div class="scenario-buttons"><button data-receiver="available" aria-pressed="true">Receiver available</button><button data-receiver="unavailable" aria-pressed="false">Receiver unavailable</button></div>
+            <p id="receiver-state" class="notification-note"></p>
+          </div>
+          <div class="notification-control" role="group" aria-labelledby="reply-failure-heading">
+            <h3 id="reply-failure-heading">One-time failure</h3>
+            <p class="notification-note">Make the receiver available, then lose its next reply after saving the notification. The failure clears after one request.</p>
+            <div class="scenario-buttons"><button data-receiver="lose-next-response" aria-pressed="false">Lose next reply</button></div>
+            <p id="reply-fault-state" class="notification-note" role="status">Not armed.</p>
+          </div>
+        </div>
+        <h3 class="delivery-history-heading">Delivery history</h3>
         <p id="delivery-message" class="notification-note" role="status">Waiting for delivery history.</p>
         <p id="receiver-summary" class="notification-note"></p>
         <div id="deliveries-list" class="delivery-list"></div>

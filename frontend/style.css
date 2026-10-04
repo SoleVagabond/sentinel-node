@@ -347,6 +347,14 @@ h2 { font-size: 1.1rem; font-weight: 600; }
 .delivery-list { margin-top: 1rem; }
 .notification-note { color: #aabbcf; font-size: .8rem; line-height: 1.6; }
 .notification-feedback { color: #dbeafe; background: #14243c; border-left: 3px solid #60a5fa; padding: .8rem 1rem; font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
+.notification-control { min-width: 0; padding: 1.1rem; border: 1px solid #34425a; border-radius: 10px; background: #111a28; }
+.notification-control h3 { font-size: 1rem; margin-bottom: .5rem; }
+.notification-control .scenario-buttons { margin: .85rem 0; }
+.notification-actions { margin-top: 1rem; }
+.notification-settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+.scenario-buttons .primary-action { background: #2563b0; border-color: #83b9ff; color: #fff; font-weight: 700; }
+.scenario-buttons .primary-action:hover { background: #1f5599; }
+.delivery-history-heading { font-size: 1rem; margin: 1.5rem 0 .7rem; }
 .lab-shortcut { display: inline-block; margin-top: .8rem; color: #dbeafe; background: #14243c; border: 1px solid #60a5fa; border-radius: 8px; padding: .65rem 1rem; font-size: .9rem; text-decoration: none; }
 .lab-shortcut:hover { background: #203858; }
 .lab-shortcut:focus-visible, #notification-lab:focus-visible { outline: 3px solid #a5c8ff; outline-offset: 4px; }
@@ -354,5 +362,5 @@ h2 { font-size: 1.1rem; font-weight: 600; }
 .delivery-row > div { min-width: 0; overflow-wrap: anywhere; }
 footer { text-align: left; margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--glass-border); font-size: .75rem; line-height: 1.8; color: #aabbcf; }
 @media (max-width: 820px) { header { flex-direction: column; align-items: flex-start; } .overview { grid-template-columns: repeat(2, 1fr); } .section-heading { flex-direction: column; gap: .4rem; } }
-@media (max-width: 480px) { .container { padding: 1.2rem; } .stat { padding: 1rem; } .incident-row { gap: .65rem; padding: .9rem; } }
+@media (max-width: 480px) { .container { padding: 1.2rem; } .stat { padding: 1rem; } .incident-row { gap: .65rem; padding: .9rem; } .notification-settings { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

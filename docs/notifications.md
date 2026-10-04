@@ -6,6 +6,8 @@ Sentinel's local lab sends actual JSON webhooks for incident opening, escalation
 
 Use **Open notification lab ↓** beside the main demo controls to jump directly to notification controls. The shortcut moves keyboard focus into the panel as well as scrolling to it, so a long incident history does not hide the test action.
 
+The panel separates **Send and retry** actions from **Receiver availability** settings and the **One-time failure** experiment. Available/Unavailable stays selected until changed. **Lose next reply** makes the receiver available and arms a single lost acknowledgement; its armed status clears after acceptance. It does not itself send a notification. The primary **Send test notification** action remains at the top of the panel.
+
 For a quick test entirely within the notification panel, select **Receiver unavailable**, then **Send test notification**. The result reports the HTTP 503 and shows a pending test record. Restore **Receiver available**, then retry after its displayed due time. With **Lose next reply** armed, a test is accepted but initially unacknowledged; a subsequent retry uses the same reference and the receiver retains one notification. Test messages are labelled `test` and do not create service incidents or change observed health. The action result updates when the latest test is acknowledged, including by the background loop.
 
 Each receiver control confirms its setting and explains the next action. **Retry due deliveries** reports attempted and acknowledged counts, or explains that nothing is pending or due. Failed records remain visible and are not automatically replayed. The current receiver state is shown separately from the last action result.

@@ -139,8 +139,9 @@
     $('receiver-state').textContent = {
       available: 'Current receiver: available. New notifications can be acknowledged.',
       unavailable: 'Current receiver: unavailable. New deliveries receive HTTP 503 and remain queued for retry.',
-      'lose-next-response': 'Current receiver: next reply will be lost after acceptance. Retry uses the same event reference.'
+      'lose-next-response': 'Current receiver: available. A one-time lost reply is armed.'
     }[data.receiver_mode] || 'Receiver state unavailable.';
+    $('reply-fault-state').textContent = data.receiver_mode === 'lose-next-response' ? 'Armed. The next notification will be saved, but its reply will be lost.' : 'Not armed. Replies are sent normally when the receiver is available.';
     if (fingerprint === deliveryFingerprint) return;
     // Build the complete view first; malformed optional delivery data leaves health independent.
     const rows = [...data.deliveries].reverse().slice(0, 12).map(item => {
@@ -157,7 +158,7 @@
     $('receiver-summary').textContent = `Receiver retained ${data.receipts.length} unique notifications from ${requests} accepted HTTP requests. Duplicate references are counted without accepting another notification.`;
     if (!rows.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'No notifications yet. Send a test notification or trigger an incident.'; rows.push(empty); }
     $('deliveries-list').replaceChildren(...rows);
-    document.querySelectorAll('[data-receiver]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.receiver === data.receiver_mode)));
+    document.querySelectorAll('[data-receiver]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.receiver === data.receiver_mode || (button.dataset.receiver === 'available' && data.receiver_mode === 'lose-next-response'))));
     deliveryFingerprint = fingerprint;
   }
 
@@ -176,7 +177,7 @@
         $('notification-action').textContent = {
           available: 'Receiver available. Send a test notification or retry pending deliveries.',
           unavailable: 'Receiver unavailable. Send a test notification to see it queue for retry.',
-          'lose-next-response': 'Next reply will be lost after acceptance. Send a test notification to try it.'
+          'lose-next-response': 'Next reply will be lost after acceptance. Receiver is available; send a test notification to try it.'
         }[button.dataset.receiver];
       } else if (button.id === 'send-test-notification') {
         const row = result.delivery;
