@@ -15,6 +15,7 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
+from alerts import STATE_KEY, Webhook, dispatch, reconcile, validate_state
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -162,13 +163,20 @@ class S3Store:
         self.client.put_object(Bucket=self.bucket, Key=key, Body=json.dumps(data).encode(), ContentType='application/json', CacheControl='no-store')
 
 
-def run_once(endpoints, store, mode='live', interval_seconds=60):
+def run_once(endpoints, store, mode='live', interval_seconds=60, notifier=None):
     previous = store.read('status_data.json')
     history = store.read('history.json')
+    alert_state = validate_state(store.read(STATE_KEY)) if notifier is not None else None
+    if alert_state and alert_state['checkpoint']:
+        previous = alert_state['checkpoint']
     started = time.perf_counter()
     snapshot = build_snapshot(collect(endpoints), previous, mode=mode, interval_seconds=interval_seconds)
+    if notifier is not None:
+        store.write(STATE_KEY, reconcile(alert_state, snapshot))
     store.write('history.json', extend_history(history, snapshot))
     store.write('status_data.json', snapshot)
+    if notifier is not None:
+        dispatch(store, notifier)
     LOGGER.info(json.dumps({'event': 'check_completed', 'duration_ms': round((time.perf_counter() - started) * 1000), 'counts': snapshot['summary']}))
     return snapshot
 
@@ -186,10 +194,14 @@ def main():
     parser = argparse.ArgumentParser(description='Check explicitly configured endpoints and write dashboard telemetry.')
     parser.add_argument('--config', required=True, type=Path)
     parser.add_argument('--output', type=Path, default=Path('work/telemetry'))
+    parser.add_argument('--notify', action='store_true', help='Send to SENTINEL_WEBHOOK_URL; token comes from SENTINEL_WEBHOOK_TOKEN.')
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
     endpoints = validate_config(json.loads(args.config.read_text(encoding='utf-8')))
-    run_once(endpoints, LocalStore(args.output))
+    if args.notify and not os.environ.get('SENTINEL_WEBHOOK_URL'):
+        parser.error('--notify requires SENTINEL_WEBHOOK_URL.')
+    notifier = Webhook(os.environ['SENTINEL_WEBHOOK_URL'], os.environ.get('SENTINEL_WEBHOOK_TOKEN')) if args.notify else None
+    run_once(endpoints, LocalStore(args.output), notifier=notifier)
 
 
 if __name__ == '__main__':

@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: '22'
       - run: python -m unittest discover -s tests -v
+      - run: python scripts/record_notifications.py
       - run: node --test tests/telemetry.test.cjs
       - run: node --check frontend/app.js
       - run: python scripts/package_lambda.py --config backend/endpoints.example.json

@@ -109,7 +109,7 @@ class MonitorTests(unittest.TestCase):
             output = package_lambda.package(ROOT / 'backend/endpoints.example.json', Path(directory) / 'lambda.zip', install_dependencies=False)
             from zipfile import ZipFile
             with ZipFile(output) as archive:
-                self.assertEqual(sorted(archive.namelist()), ['endpoints.json', 'monitor.py'])
+                self.assertEqual(sorted(archive.namelist()), ['alerts.py', 'endpoints.json', 'monitor.py'])
 
     def test_package_is_reproducible_for_the_same_inputs(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -30,12 +30,13 @@ Open **http://127.0.0.1:8791/**. Use a different port with `--port 8792` if need
 - **Pause telemetry**: sampling pauses and the last observation is deliberately aged beyond the freshness window. Cards become unknown.
 - **Recover**: fresh healthy checks resume and open incidents receive a recovery timestamp.
 
-The local server binds only to `127.0.0.1`. Scenario controls exist only in this demo. The labels and URLs make sample services explicit. Local demo history is held in memory and resets when the process restarts.
+The local server binds only to `127.0.0.1`. Scenario controls exist only in this demo. The labels and URLs make sample services explicit. Sample history resets when the process restarts; incident notification checkpoints and receiver receipts persist under `work/lab-8791/`. Choose a fresh directory with `--state-dir work/new-session`. The notification lab adds available, unavailable, and lost-reply receiver controls, using real local HTTP delivery.
 
 ## What it demonstrates
 
 - Concurrent, configurable HTTP probes with verified TLS for HTTPS URLs, timeout/error classification, and expected response codes.
 - Incident opening, updates without duplication, and recovery on a healthy observation.
+- Durable incident webhooks with bounded retries, receiver deduplication, and delivery history. The local lab demonstrates receiver failure and a lost reply after acceptance; see [notification delivery](docs/notifications.md) and its [recorded evidence](docs/evidence/notification-delivery.json).
 - Bounded sampled history: 60 snapshots and up to 100 retained incidents, keeping active incidents.
 - Honest freshness: stale or unavailable data never displays current operational counts.
 - Optional history failures do not invalidate a valid current observation. History newer than the completed snapshot is withheld until a matching current check arrives.
@@ -119,4 +120,4 @@ HTTP probes measure time to response headers, not full response-body correctness
 
 History is a small rolling window, not long-term analytics. The two S3 objects are written sequentially and are not a transactional pair; a partially failed write can leave history ahead of the current snapshot. Existing data is not silently replaced when a read fails. Failed invocations leave the last completed observation in place, which becomes stale.
 
-No notifications, multi-region checks, dashboard login, or production traffic/load claims are included in this release.
+Webhook notifications are verified locally and opt-in for the standalone monitor. AWS notification delivery, monitor-heartbeat alerts, multi-region checks, dashboard login, and production traffic/load claims remain outside the verified release. Notification state requires one writer and a private output directory; see [delivery semantics and limits](docs/notifications.md).

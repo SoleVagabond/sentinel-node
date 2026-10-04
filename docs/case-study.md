@@ -12,6 +12,8 @@ The monitor now validates operator-defined endpoints, checks up to eight service
 
 The dashboard makes freshness a separate signal from service health. Old or unavailable observations become unknown, while the last observed result remains visible for diagnosis. Current success counts disappear when the data is no longer trustworthy.
 
+Incident alerts now have a durable outbox, stable event IDs, bounded backoff, and separate delivery history. An unavailable receiver can leave notifications queued while the monitored service recovers. The loopback receiver saves a notification before deliberately losing its reply; the retry reaches the same ID and produces one unique receipt from two requests. Delivery failure is kept separate from observed service health.
+
 A local incident lab provides actual HTTP services whose behavior can be changed deliberately. It demonstrates slow responses, HTTP failures, paused telemetry, and recovery without requiring cloud accounts or presenting sample data as live customer infrastructure.
 
 The cloud configuration uses a private S3 origin behind CloudFront, uploads its frontend assets, restricts the monitor's S3 permissions to the telemetry objects, and serializes writes. A clean, pinned SDK package replaces the prebuilt platform-specific directory.
@@ -20,9 +22,9 @@ The cloud configuration uses a private S3 origin behind CloudFront, uploads its 
 
 A review found two history failure cases: malformed optional history could make a valid current observation unavailable, and a partially completed write could show history newer than the displayed status snapshot. History now has its own validation and timestamp boundary. The new unit and browser checks demonstrate that valid current health remains available when optional history fails, without implying that a newer check completed.
 
-Thirty-three application checks, twenty-one browser scenarios, and one Terraform security simulation passed. The browser scenarios cover healthy, degraded, outage, stale, unavailable, and recovered states across desktop and two phone widths. Keyboard checks and automated accessibility scans exercise focus behavior and WCAG A/AA rules. The full [verification record](validation.md) links the independently executed Linux workflow and distinguishes observed results from remaining deployment work.
+The earlier history-handling release passed thirty-three application checks, twenty-one browser scenarios, and one Terraform security simulation. The new notification release adds backend and browser checks for delivery order, failure, retries, receiver deduplication, and independent service health. The full [verification record](validation.md) distinguishes observed results from remaining deployment work.
 
-The implementation deliberately keeps a small operational scope. It measures HTTP response headers and sampled availability rather than claiming full application correctness or continuous uptime. History is bounded and does not replace long-term observability storage. Notifications and multi-region monitoring remain outside this release.
+The implementation deliberately keeps a small operational scope. It measures HTTP response headers and sampled availability rather than claiming full application correctness or continuous uptime. History is bounded and does not replace long-term observability storage. [Notification delivery](notifications.md) is verified locally, with finite retries and receiver-side deduplication; AWS notification integration and multi-region monitoring remain outside this release.
 
 ## Next release gate
 

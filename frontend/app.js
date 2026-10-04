@@ -10,6 +10,7 @@
   let demoEnabled = false;
   let currentScenario = '';
   let renderedFingerprint = '';
+  let deliveryFingerprint = '';
   const dateLabel = value => new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'medium' });
   const secondsLabel = seconds => seconds < 60 ? `${Math.floor(seconds)}s` : `${Math.floor(seconds / 60)}m ${Math.floor(seconds % 60)}s`;
 
@@ -92,7 +93,7 @@
     if (busy) return;
     busy = true; $('refresh-btn').disabled = true; $('refresh-btn').textContent = 'Checking…';
     const requests = [fetchJson('status_data.json'), fetchJson('history.json')];
-    if (demoEnabled) requests.push(fetchJson('demo-config.json'));
+    if (demoEnabled) requests.push(fetchJson('demo-config.json'), fetchJson('alerts.json'));
     const results = await Promise.allSettled(requests);
     try {
       if (results[0].status !== 'fulfilled') throw new Error('Telemetry request failed');
@@ -104,7 +105,54 @@
       } catch (_) { history = []; }
       if (results[2]?.status === 'fulfilled') setScenarioUI(results[2].value.scenario);
     } catch (_) { offline = true; }
-    finally { busy = false; $('refresh-btn').disabled = false; $('refresh-btn').textContent = 'Refresh'; render(); }
+    finally {
+      if (demoEnabled) {
+        try {
+          if (results[3]?.status !== 'fulfilled') throw new Error('Delivery history unavailable');
+          renderDeliveries(results[3].value);
+        } catch (_) { $('delivery-message').textContent = 'Delivery history unavailable. Previously loaded records may be out of date.'; }
+      }
+      busy = false; $('refresh-btn').disabled = false; $('refresh-btn').textContent = 'Refresh'; render();
+    }
+  }
+
+  function renderDeliveries(data) {
+    if (data?.schema_version !== 1 || !Array.isArray(data.deliveries) || !Array.isArray(data.receipts) || !data.summary) throw new Error('Invalid delivery history');
+    const fingerprint = JSON.stringify(data);
+    const { pending, delivered, failed } = data.summary;
+    if (![pending, delivered, failed].every(value => Number.isInteger(value) && value >= 0)) throw new Error('Invalid delivery counts');
+    $('delivery-message').textContent = `${pending} pending · ${delivered} delivered · ${failed} failed. Retries wait for their due time; permanent failures stop automatically.`;
+    if (fingerprint === deliveryFingerprint) return;
+    // Build the complete view first; malformed optional delivery data leaves health independent.
+    const rows = [...data.deliveries].reverse().slice(0, 12).map(item => {
+      if (!['pending', 'delivered', 'failed'].includes(item.status) || !['opened', 'escalated', 'recovered'].includes(item.event?.type) || !Number.isInteger(item.attempts)) throw new Error('Invalid delivery');
+      const row = document.createElement('article'); row.className = 'incident-row delivery-row';
+      const badge = document.createElement('span'); badge.className = `incident-badge ${item.status === 'delivered' ? 'resolved' : 'active'}`; badge.textContent = item.status[0].toUpperCase() + item.status.slice(1);
+      const detail = document.createElement('div');
+      const name = document.createElement('h3'); name.textContent = `${item.event.type[0].toUpperCase() + item.event.type.slice(1)} · ${item.event.name}`;
+      const attempts = document.createElement('p'); attempts.textContent = `${item.attempts} attempt${item.attempts === 1 ? '' : 's'}${item.last_error ? ` · ${item.last_error}` : ''}`;
+      const date = document.createElement('p'); date.className = 'incident-dates'; date.textContent = item.status === 'delivered' ? `Acknowledged ${dateLabel(item.delivered_at)}` : item.status === 'pending' ? `Next eligible retry ${dateLabel(item.next_attempt_at)}` : 'Delivery stopped. Inspect the receiver before taking further action.';
+      detail.append(name, attempts, date); row.append(badge, detail); return row;
+    });
+    const requests = data.receipts.reduce((sum, row) => sum + row.requests, 0);
+    $('receiver-summary').textContent = `Receiver retained ${data.receipts.length} unique notifications from ${requests} accepted HTTP requests. Duplicate references are counted without accepting another notification.`;
+    if (!rows.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'No notifications yet. Trigger a slow response or API outage.'; rows.push(empty); }
+    $('deliveries-list').replaceChildren(...rows);
+    document.querySelectorAll('[data-receiver]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.receiver === data.receiver_mode)));
+    deliveryFingerprint = fingerprint;
+  }
+
+  async function changeReceiver(event) {
+    const button = event.target.closest('button');
+    if (!button || !demoEnabled || (!button.dataset.receiver && button.id !== 'retry-deliveries')) return;
+    const buttons = [...$('notification-lab').querySelectorAll('button')];
+    buttons.forEach(item => { item.disabled = true; });
+    try {
+      const response = await fetch(button.dataset.receiver ? 'api/receiver' : 'api/retry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(button.dataset.receiver ? { mode: button.dataset.receiver } : {}), signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error('Receiver control failed');
+      await refresh();
+    } catch (_) { $('delivery-message').textContent = 'Could not update the receiver. Try again.'; }
+    finally { buttons.forEach(item => { item.disabled = false; }); if (document.activeElement === document.body) button.focus({ preventScroll: true }); }
   }
 
   function setScenarioUI(scenario) {
@@ -134,10 +182,11 @@
     try {
       const config = await fetchJson('demo-config.json');
       demoEnabled = config.mode === 'demo';
-      if (demoEnabled) { $('demo-panel').hidden = false; setScenarioUI(config.scenario); }
+      if (demoEnabled) { $('demo-panel').hidden = false; $('notification-lab').hidden = false; setScenarioUI(config.scenario); }
     } catch (_) { /* Failed environment configuration leaves demo controls disabled. */ }
     $('refresh-btn').addEventListener('click', refresh);
     $('demo-panel').addEventListener('click', chooseScenario);
+    $('notification-lab').addEventListener('click', changeReceiver);
     await refresh();
     setInterval(refresh, demoEnabled ? 5000 : 15000);
     setInterval(render, 1000);

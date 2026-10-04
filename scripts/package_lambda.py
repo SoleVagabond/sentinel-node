@@ -24,6 +24,7 @@ def package(config, output, install_dependencies=True):
         shutil.rmtree(staging)
     staging.mkdir()
     shutil.copyfile(ROOT / 'backend/monitor.py', staging / 'monitor.py')
+    shutil.copyfile(ROOT / 'backend/alerts.py', staging / 'alerts.py')
     shutil.copyfile(config, staging / 'endpoints.json')
     if install_dependencies:
         subprocess.run([sys.executable, '-m', 'pip', 'install', '--disable-pip-version-check', '--only-binary=:all:',

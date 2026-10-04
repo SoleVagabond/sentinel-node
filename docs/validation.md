@@ -2,6 +2,12 @@
 
 October 4, 2026
 
+## Notification feature: local verification
+
+The new durable outbox and receiver fixtures passed 45 Python checks on Windows, including actual HTTP delivery and connection loss after a receipt was saved. The six-step [notification recording](evidence/notification-delivery.json) was regenerated with real retry due times and verified five unique notifications from six accepted requests. Ten frontend telemetry checks and the JavaScript syntax check also passed locally. Fresh Linux browser, package, and infrastructure results will be recorded after the published workflow completes.
+
+## Earlier history-handling release
+
 The current history-handling release was checked locally on Windows and in a fresh Linux checkout through [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37176167008), commit `8d17c87`. All three jobs passed. The development baseline is Python 3.13, Node.js 22, Terraform 1.13.5, AWS provider 5.100.0, and Random provider 3.9.1. The dependency lock includes the official Windows and Linux provider checksums.
 
 ## Passed

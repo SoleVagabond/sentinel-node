@@ -34,6 +34,16 @@
       <div class="controls"><div><h2>Service health</h2><p id="last-updated">Waiting for the first completed check.</p></div><button id="refresh-btn" class="glass-btn">Refresh</button></div>
       <div class="grid" id="endpoint-grid" role="group" aria-label="Monitored services"></div>
       <section class="incident-section" aria-labelledby="incidents-heading"><div class="section-heading"><h2 id="incidents-heading">Incident timeline</h2><p>Failures, slow responses, and confirmed recovery.</p></div><div id="incidents-list"><p class="empty">No telemetry yet.</p></div></section>
+      <section class="incident-section" id="notification-lab" hidden aria-labelledby="notifications-heading">
+        <div class="section-heading"><h2 id="notifications-heading">Notification delivery lab</h2><p>Real local HTTP delivery · saved across restarts</p></div>
+        <p class="notification-note">Change the receiver, then trigger a service incident above. A lost reply is accepted once by the receiver and retried with the same event reference.</p>
+        <div class="scenario-buttons" role="group" aria-label="Local notification receiver">
+          <button data-receiver="available" aria-pressed="true">Receiver available</button><button data-receiver="unavailable" aria-pressed="false">Receiver unavailable</button><button data-receiver="lose-next-response" aria-pressed="false">Lose next reply</button><button id="retry-deliveries">Retry due deliveries</button>
+        </div>
+        <p id="delivery-message" class="notification-note" role="status">Waiting for delivery history.</p>
+        <p id="receiver-summary" class="notification-note"></p>
+        <div id="deliveries-list" class="delivery-list"></div>
+      </section>
     </main>
     <footer><p id="environment-label">Read-only monitoring dashboard</p><p>Latency measures the HTTP response headers. History shows sampled checks, not continuous uptime.</p></footer>
   </div>

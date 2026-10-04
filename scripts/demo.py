@@ -6,22 +6,29 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import sys
+import tempfile
+import socket
 import threading
 import time
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'backend'))
-from monitor import build_snapshot, collect, extend_history
+from monitor import build_snapshot, collect, extend_history, LocalStore
+from alerts import STATE_KEY, Webhook, dispatch, reconcile, validate_state, public_view
 
 SCENARIOS = ('healthy', 'degraded', 'outage', 'stale', 'recovered')
 
 
 class DemoState:
-    def __init__(self, port):
+    def __init__(self, port, directory):
         self.scenario = 'healthy'
         self.lock = threading.Lock()
         self.collection_lock = threading.Lock()
+        self.receiver_lock = threading.Lock()
+        self.receiver_mode = 'available'
+        self.store = LocalStore(directory)
+        self.sender = Webhook(f'http://127.0.0.1:{port}/api/notifications')
         self.snapshot = {}
         self.history = {}
         self.endpoints = [{'id': key, 'name': name, 'url': f'http://127.0.0.1:{port}/fixtures/{key}', 'timeout_seconds': 2, 'degraded_after_ms': 150}
@@ -33,10 +40,42 @@ class DemoState:
                 if self.scenario == 'stale' and self.snapshot:
                     return
                 previous = self.snapshot
+            alert_state = validate_state(self.store.read(STATE_KEY))
+            previous = alert_state['checkpoint'] or previous
             snapshot = build_snapshot(collect(self.endpoints), previous, mode='demo', interval_seconds=5)
+            self.store.write(STATE_KEY, reconcile(alert_state, snapshot))
             with self.lock:
                 self.snapshot = snapshot
                 self.history = extend_history(self.history, snapshot)
+            dispatch(self.store, self.sender, base_delay=1)
+
+    def retry(self):
+        with self.collection_lock:
+            return dispatch(self.store, self.sender, base_delay=1)
+
+    def alerts(self):
+        with self.receiver_lock:
+            receipts = self.store.read('receiver_receipts.json').get('receipts', [])
+            mode = self.receiver_mode
+        return dict(public_view(self.store.read(STATE_KEY)), receiver_mode=mode, receipts=receipts)
+
+    def receive(self, event):
+        with self.receiver_lock:
+            if self.receiver_mode == 'unavailable':
+                return 503
+            records = self.store.read('receiver_receipts.json').get('receipts', [])
+            existing = next((row for row in records if row['event']['id'] == event['id']), None)
+            if existing and existing['event'] != event:
+                return 409
+            if existing:
+                existing['requests'] += 1
+            else:
+                records.append({'event': event, 'requests': 1})
+            self.store.write('receiver_receipts.json', {'receipts': records[-1000:]})
+            if self.receiver_mode == 'lose-next-response':
+                self.receiver_mode = 'available'
+                return None
+            return 200
 
     def set_scenario(self, scenario):
         if scenario not in SCENARIOS:
@@ -81,6 +120,8 @@ class DemoHandler(SimpleHTTPRequestHandler):
             if scenario == 'degraded' and key == 'api':
                 time.sleep(.35)
             self.json_response({'service': key}, 503 if scenario == 'outage' and key == 'api' else 200)
+        elif route == '/alerts.json':
+            self.json_response(state.alerts())
         elif route in ('/status_data.json', '/history.json', '/demo-config.json'):
             with state.lock:
                 data = {'mode': 'demo', 'scenario': state.scenario} if route == '/demo-config.json' else state.snapshot if route == '/status_data.json' else state.history
@@ -91,7 +132,7 @@ class DemoHandler(SimpleHTTPRequestHandler):
             self.json_response({'error': 'Not found'}, 404)
 
     def do_POST(self):
-        if self.path != '/api/scenario':
+        if self.path not in ('/api/scenario', '/api/receiver', '/api/retry', '/api/notifications'):
             self.json_response({'error': 'Not found'}, 404)
             return
         origin = self.headers.get('Origin')
@@ -101,30 +142,56 @@ class DemoHandler(SimpleHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get('Content-Length', '0'))
-            if not 1 <= length <= 1024:
+            if not 1 <= length <= 8192:
                 raise ValueError('Request too large or empty.')
             payload = json.loads(self.rfile.read(length))
-            self.server.demo_state.set_scenario(payload['scenario'])
-            self.json_response({'ok': True, 'scenario': payload['scenario']})
+            state = self.server.demo_state
+            if self.path == '/api/scenario':
+                state.set_scenario(payload['scenario'])
+                self.json_response({'ok': True, 'scenario': payload['scenario']})
+            elif self.path == '/api/receiver':
+                if payload['mode'] not in ('available', 'unavailable', 'lose-next-response'):
+                    raise ValueError('Invalid receiver mode.')
+                with state.receiver_lock:
+                    state.receiver_mode = payload['mode']
+                self.json_response({'ok': True})
+            elif self.path == '/api/retry':
+                state.retry()
+                self.json_response({'ok': True})
+            else:
+                if not isinstance(payload.get('id'), str) or len(payload['id']) != 64 or self.headers.get('Idempotency-Key') != payload['id']:
+                    raise ValueError('A matching event ID is required.')
+                code = state.receive(payload)
+                if code is None:
+                    self.close_connection = True
+                    self.connection.shutdown(socket.SHUT_RDWR)
+                    self.connection.close()
+                else:
+                    self.json_response({'accepted': code == 200}, code)
         except (ValueError, KeyError, TypeError):
-            self.json_response({'error': 'Choose a valid demo scenario.'}, 400)
+            self.json_response({'error': 'Choose a valid local lab request.'}, 400)
 
 
-def create_server(port=8791):
+def create_server(port=8791, directory=None):
     server = ThreadingHTTPServer(('127.0.0.1', port), DemoHandler)
-    server.demo_state = DemoState(server.server_port)
+    if directory is None:
+        server.temporary_state = tempfile.TemporaryDirectory(prefix='sentinel-lab-')
+        directory = server.temporary_state.name
+    server.demo_state = DemoState(server.server_port, directory)
     return server
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=8791)
+    parser.add_argument('--state-dir', type=Path, help='Private durable notification state; defaults to work/lab-<port>.')
     args = parser.parse_args()
-    server = create_server(args.port)
+    server = create_server(args.port, args.state_dir or ROOT / 'work' / f'lab-{args.port}')
     stopping = threading.Event()
     def sample_loop():
         while not stopping.is_set():
             server.demo_state.sample()
+            server.demo_state.retry()
             stopping.wait(5)
     worker = threading.Thread(target=sample_loop, daemon=True)
     worker.start()

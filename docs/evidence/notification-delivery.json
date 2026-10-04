@@ -1,0 +1,1089 @@
+{
+  "environment": "local notification lab",
+  "notes": "Actual HTTP probes and loopback webhook delivery. Receiver outages and a closed connection after saving a receipt are deliberate fixtures. Retry due times use the real clock. This is recorded evidence, not a live cloud observation.",
+  "steps": [
+    {
+      "step": "healthy",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T04:52:57.540461+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:59665/fixtures/storefront",
+            "timestamp": "2026-10-04T04:52:57.473402+00:00",
+            "status_code": 200,
+            "latency_ms": 66.5,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:59665/fixtures/api",
+            "timestamp": "2026-10-04T04:52:57.474050+00:00",
+            "status_code": 200,
+            "latency_ms": 65.26,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:59665/fixtures/identity",
+            "timestamp": "2026-10-04T04:52:57.474457+00:00",
+            "status_code": 200,
+            "latency_ms": 65.74,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:59665/fixtures/queue",
+            "timestamp": "2026-10-04T04:52:57.504159+00:00",
+            "status_code": 200,
+            "latency_ms": 34.54,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 4,
+          "Yellow": 0,
+          "Red": 0
+        },
+        "incidents": []
+      },
+      "notifications": {
+        "schema_version": 1,
+        "deliveries": [],
+        "summary": {
+          "pending": 0,
+          "delivered": 0,
+          "failed": 0
+        },
+        "receiver_mode": "available",
+        "receipts": []
+      }
+    },
+    {
+      "step": "healthy-services-unavailable-receiver",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T04:52:57.933630+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:59665/fixtures/storefront",
+            "timestamp": "2026-10-04T04:52:57.930474+00:00",
+            "status_code": 200,
+            "latency_ms": 2.14,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:59665/fixtures/api",
+            "timestamp": "2026-10-04T04:52:57.930720+00:00",
+            "status_code": 200,
+            "latency_ms": 1.35,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:59665/fixtures/identity",
+            "timestamp": "2026-10-04T04:52:57.930919+00:00",
+            "status_code": 200,
+            "latency_ms": 1.98,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:59665/fixtures/queue",
+            "timestamp": "2026-10-04T04:52:57.931164+00:00",
+            "status_code": 200,
+            "latency_ms": 2.26,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 4,
+          "Yellow": 0,
+          "Red": 0
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:57.902179+00:00",
+            "resolved_at": "2026-10-04T04:52:57.933630+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503",
+            "alert_escalated": true
+          }
+        ]
+      },
+      "notifications": {
+        "schema_version": 1,
+        "deliveries": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "status": "pending",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:58.909520+00:00",
+            "last_attempt_at": "2026-10-04T04:52:57.909520+00:00",
+            "delivered_at": null,
+            "last_error": "HTTP 503"
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "pending",
+            "attempts": 0,
+            "next_attempt_at": "2026-10-04T04:52:57.921900+00:00",
+            "last_attempt_at": null,
+            "delivered_at": null,
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "pending",
+            "attempts": 0,
+            "next_attempt_at": "2026-10-04T04:52:57.933630+00:00",
+            "last_attempt_at": null,
+            "delivered_at": null,
+            "last_error": null
+          }
+        ],
+        "summary": {
+          "pending": 3,
+          "delivered": 0,
+          "failed": 0
+        },
+        "receiver_mode": "unavailable",
+        "receipts": []
+      }
+    },
+    {
+      "step": "receiver-restored",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T04:52:57.933630+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:59665/fixtures/storefront",
+            "timestamp": "2026-10-04T04:52:57.930474+00:00",
+            "status_code": 200,
+            "latency_ms": 2.14,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:59665/fixtures/api",
+            "timestamp": "2026-10-04T04:52:57.930720+00:00",
+            "status_code": 200,
+            "latency_ms": 1.35,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:59665/fixtures/identity",
+            "timestamp": "2026-10-04T04:52:57.930919+00:00",
+            "status_code": 200,
+            "latency_ms": 1.98,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:59665/fixtures/queue",
+            "timestamp": "2026-10-04T04:52:57.931164+00:00",
+            "status_code": 200,
+            "latency_ms": 2.26,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 4,
+          "Yellow": 0,
+          "Red": 0
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:57.902179+00:00",
+            "resolved_at": "2026-10-04T04:52:57.933630+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503",
+            "alert_escalated": true
+          }
+        ]
+      },
+      "notifications": {
+        "schema_version": 1,
+        "deliveries": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "status": "delivered",
+            "attempts": 2,
+            "next_attempt_at": "2026-10-04T04:53:00.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          }
+        ],
+        "summary": {
+          "pending": 0,
+          "delivered": 3,
+          "failed": 0
+        },
+        "receiver_mode": "available",
+        "receipts": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          }
+        ]
+      }
+    },
+    {
+      "step": "accepted-with-lost-reply",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T04:52:59.099844+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:59665/fixtures/storefront",
+            "timestamp": "2026-10-04T04:52:59.096638+00:00",
+            "status_code": 200,
+            "latency_ms": 1.96,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:59665/fixtures/api",
+            "timestamp": "2026-10-04T04:52:59.096858+00:00",
+            "status_code": 503,
+            "latency_ms": 1.42,
+            "error": "Unexpected HTTP 503",
+            "status": "Red"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:59665/fixtures/identity",
+            "timestamp": "2026-10-04T04:52:59.097047+00:00",
+            "status_code": 200,
+            "latency_ms": 2.02,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:59665/fixtures/queue",
+            "timestamp": "2026-10-04T04:52:59.097292+00:00",
+            "status_code": 200,
+            "latency_ms": 2.22,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 3,
+          "Yellow": 0,
+          "Red": 1
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:57.902179+00:00",
+            "resolved_at": "2026-10-04T04:52:57.933630+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503",
+            "alert_escalated": true
+          },
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:59.099844+00:00",
+            "resolved_at": null,
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503"
+          }
+        ]
+      },
+      "notifications": {
+        "schema_version": 1,
+        "deliveries": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "status": "delivered",
+            "attempts": 2,
+            "next_attempt_at": "2026-10-04T04:53:00.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "228beed589fcec2bcb8ff0b69e532e10548104c8e6941824ec8891bcb3f4d340",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:52:59.099844+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "pending",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:53:00.107989+00:00",
+            "last_attempt_at": "2026-10-04T04:52:59.107989+00:00",
+            "delivered_at": null,
+            "last_error": "No acknowledgement"
+          }
+        ],
+        "summary": {
+          "pending": 1,
+          "delivered": 3,
+          "failed": 0
+        },
+        "receiver_mode": "available",
+        "receipts": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "228beed589fcec2bcb8ff0b69e532e10548104c8e6941824ec8891bcb3f4d340",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:52:59.099844+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          }
+        ]
+      }
+    },
+    {
+      "step": "same-reference-retried",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T04:52:59.099844+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:59665/fixtures/storefront",
+            "timestamp": "2026-10-04T04:52:59.096638+00:00",
+            "status_code": 200,
+            "latency_ms": 1.96,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:59665/fixtures/api",
+            "timestamp": "2026-10-04T04:52:59.096858+00:00",
+            "status_code": 503,
+            "latency_ms": 1.42,
+            "error": "Unexpected HTTP 503",
+            "status": "Red"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:59665/fixtures/identity",
+            "timestamp": "2026-10-04T04:52:59.097047+00:00",
+            "status_code": 200,
+            "latency_ms": 2.02,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:59665/fixtures/queue",
+            "timestamp": "2026-10-04T04:52:59.097292+00:00",
+            "status_code": 200,
+            "latency_ms": 2.22,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 3,
+          "Yellow": 0,
+          "Red": 1
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:57.902179+00:00",
+            "resolved_at": "2026-10-04T04:52:57.933630+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503",
+            "alert_escalated": true
+          },
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:59.099844+00:00",
+            "resolved_at": null,
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503"
+          }
+        ]
+      },
+      "notifications": {
+        "schema_version": 1,
+        "deliveries": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "status": "delivered",
+            "attempts": 2,
+            "next_attempt_at": "2026-10-04T04:53:00.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "228beed589fcec2bcb8ff0b69e532e10548104c8e6941824ec8891bcb3f4d340",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:52:59.099844+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 2,
+            "next_attempt_at": "2026-10-04T04:53:02.146571+00:00",
+            "last_attempt_at": "2026-10-04T04:53:00.146571+00:00",
+            "delivered_at": "2026-10-04T04:53:00.146571+00:00",
+            "last_error": null
+          }
+        ],
+        "summary": {
+          "pending": 0,
+          "delivered": 4,
+          "failed": 0
+        },
+        "receiver_mode": "available",
+        "receipts": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "228beed589fcec2bcb8ff0b69e532e10548104c8e6941824ec8891bcb3f4d340",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:52:59.099844+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 2
+          }
+        ]
+      }
+    },
+    {
+      "step": "confirmed-recovery",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T04:53:00.270267+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:59665/fixtures/storefront",
+            "timestamp": "2026-10-04T04:53:00.266725+00:00",
+            "status_code": 200,
+            "latency_ms": 2.25,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:59665/fixtures/api",
+            "timestamp": "2026-10-04T04:53:00.267009+00:00",
+            "status_code": 200,
+            "latency_ms": 1.5,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:59665/fixtures/identity",
+            "timestamp": "2026-10-04T04:53:00.267261+00:00",
+            "status_code": 200,
+            "latency_ms": 2.21,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:59665/fixtures/queue",
+            "timestamp": "2026-10-04T04:53:00.267501+00:00",
+            "status_code": 200,
+            "latency_ms": 2.51,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 4,
+          "Yellow": 0,
+          "Red": 0
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:57.902179+00:00",
+            "resolved_at": "2026-10-04T04:52:57.933630+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503",
+            "alert_escalated": true
+          },
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T04:52:59.099844+00:00",
+            "resolved_at": "2026-10-04T04:53:00.270267+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503",
+            "alert_escalated": true
+          }
+        ]
+      },
+      "notifications": {
+        "schema_version": 1,
+        "deliveries": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "status": "delivered",
+            "attempts": 2,
+            "next_attempt_at": "2026-10-04T04:53:00.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:52:59.957816+00:00",
+            "last_attempt_at": "2026-10-04T04:52:58.957816+00:00",
+            "delivered_at": "2026-10-04T04:52:58.957816+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "228beed589fcec2bcb8ff0b69e532e10548104c8e6941824ec8891bcb3f4d340",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:52:59.099844+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 2,
+            "next_attempt_at": "2026-10-04T04:53:02.146571+00:00",
+            "last_attempt_at": "2026-10-04T04:53:00.146571+00:00",
+            "delivered_at": "2026-10-04T04:53:00.146571+00:00",
+            "last_error": null
+          },
+          {
+            "event": {
+              "id": "88e151e30c0a303f0477869706d7daf40569a10ab631bc537f0363a1d1b1ec76",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:53:00.270267+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "status": "delivered",
+            "attempts": 1,
+            "next_attempt_at": "2026-10-04T04:53:01.278763+00:00",
+            "last_attempt_at": "2026-10-04T04:53:00.278763+00:00",
+            "delivered_at": "2026-10-04T04:53:00.278763+00:00",
+            "last_error": null
+          }
+        ],
+        "summary": {
+          "pending": 0,
+          "delivered": 5,
+          "failed": 0
+        },
+        "receiver_mode": "available",
+        "receipts": [
+          {
+            "event": {
+              "id": "9153453650ed3093e2f2514c73981238fe197105bbcbe78fd29abd738384778a",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.902179+00:00",
+              "severity": "Yellow",
+              "reason": "Response exceeded latency threshold"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "b0dc16f27e99632f6b793527d299b95fa9657add0160f88a2dfc4b9eb5a0a338",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "escalated",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.921900+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "169edae64d448ca1b4504659397202a2d16444df0d501d905ad4df70f8c8cdff",
+              "incident_id": "898e17f5b1a4e927c85a1cd66c1467cebcd4d5a5ac0fd93482e23dcaa6f9ef87",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:57.902179+00:00",
+              "observed_at": "2026-10-04T04:52:57.933630+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          },
+          {
+            "event": {
+              "id": "228beed589fcec2bcb8ff0b69e532e10548104c8e6941824ec8891bcb3f4d340",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "opened",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:52:59.099844+00:00",
+              "severity": "Red",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 2
+          },
+          {
+            "event": {
+              "id": "88e151e30c0a303f0477869706d7daf40569a10ab631bc537f0363a1d1b1ec76",
+              "incident_id": "8203594c0b98467e41bf7a934593299de26daae529ab356fb49e22fa61ddacaa",
+              "type": "recovered",
+              "endpoint_id": "api",
+              "name": "Orders API",
+              "opened_at": "2026-10-04T04:52:59.099844+00:00",
+              "observed_at": "2026-10-04T04:53:00.270267+00:00",
+              "severity": "Green",
+              "reason": "Unexpected HTTP 503"
+            },
+            "requests": 1
+          }
+        ]
+      }
+    }
+  ]
+}

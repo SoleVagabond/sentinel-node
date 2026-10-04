@@ -4,7 +4,7 @@
 
 Start `python scripts/demo.py` and walk through healthy → slow response → outage → pause telemetry → recover. The service requests are real loopback HTTP checks. The paused scenario deliberately adjusts the observation timestamp to demonstrate stale handling immediately rather than waiting.
 
-Refreshing the dashboard fetches observations; it does not itself trigger a new live cloud check. Recovering the local demo triggers a fresh local check. Restarting the demo starts a new in-memory session.
+Refreshing the dashboard fetches observations; it does not itself trigger a new live cloud check. Recovering the local demo triggers a fresh local check. Sample history resets on restart; incident checkpoints, pending deliveries, and receiver receipts persist in the selected state directory. Restarting into a healthy scenario can therefore resolve an incident from the prior run.
 
 ## Configure a live deployment
 
@@ -26,7 +26,7 @@ Pause scheduled checks through `monitor_enabled = false` in Terraform if intenti
 
 CloudFront serves a public HTTPS dashboard through a private S3 origin. The dashboard and telemetry caching policy prioritizes freshness over reduced requests. Keep the demo local until cloud operation is needed. Review AWS pricing for your region and account before applying a plan; no free-tier or cost estimate is assumed.
 
-The monitor has no SNS/email integration in this release. Lambda execution failures are visible in AWS logs, while the dashboard flags stale telemetry. If alert delivery becomes a requirement, add a separate tested alert path for both service failures and monitor failures.
+Incident webhooks and receiver failure/recovery are verified in the local lab. The standalone monitor enables delivery only with `--notify`. See [notification operations](notifications.md) for retry rules, private state, receiver deduplication, and failed-event inspection. Lambda notification delivery and an independent monitor-heartbeat alert are not enabled. Lambda execution failures remain visible in AWS logs, while the dashboard flags stale telemetry.
 
 ## Intentional cleanup
 
