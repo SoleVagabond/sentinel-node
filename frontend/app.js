@@ -146,13 +146,15 @@
     const button = event.target.closest('button');
     if (!button || !demoEnabled || (!button.dataset.receiver && button.id !== 'retry-deliveries')) return;
     const buttons = [...$('notification-lab').querySelectorAll('button')];
+    const scenarios = [...document.querySelectorAll('[data-scenario]')];
     buttons.forEach(item => { item.disabled = true; });
+    scenarios.forEach(item => { item.disabled = true; });
     try {
       const response = await fetch(button.dataset.receiver ? 'api/receiver' : 'api/retry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(button.dataset.receiver ? { mode: button.dataset.receiver } : {}), signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error('Receiver control failed');
       await refresh();
     } catch (_) { $('delivery-message').textContent = 'Could not update the receiver. Try again.'; }
-    finally { buttons.forEach(item => { item.disabled = false; }); if (document.activeElement === document.body) button.focus({ preventScroll: true }); }
+    finally { buttons.forEach(item => { item.disabled = false; }); scenarios.forEach(item => { item.disabled = false; }); if (document.activeElement === document.body) button.focus({ preventScroll: true }); }
   }
 
   function setScenarioUI(scenario) {

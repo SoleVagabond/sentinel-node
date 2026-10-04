@@ -130,6 +130,8 @@ test('accepted notification with a lost reply retries without another receiver n
   await page.getByRole('button', { name: 'Lose next reply', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Lose next reply', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Lose next reply', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Lose next reply', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'API outage', exact: true }).click();
   const initial = await (await request.get('/alerts.json')).json();
   const eventId = initial.deliveries.at(-1).event.id;
