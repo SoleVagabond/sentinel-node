@@ -54,6 +54,24 @@ test('freshness expiry hides current health before the next state fetch', async 
   await expect(page.locator('#service-cards .badge.Green')).toHaveCount(0);
 });
 
+test('blocked monitor access and HTTP forbidden responses have distinct explanations', async ({ page, request }) => {
+  const current = await state(request);
+  for (const row of current.snapshot.endpoints) Object.assign(row, { status: 'Red', status_code: null, observer_error: true, error: 'Monitor network access blocked by the operating system' });
+  current.runner.error = 'Monitor network access blocked by the operating system';
+  current.incidents = [];
+  await page.route('**/api/state', route => route.fulfill({ json: current }));
+  await page.goto('/');
+  await expect(page.locator('#health-label')).toHaveText('Monitor needs attention');
+  await expect(page.locator('#operational-total')).toHaveText('—');
+  await expect(page.locator('#service-cards .badge.Red')).toHaveCount(0);
+  current.runner.error = null;
+  for (const row of current.snapshot.endpoints) Object.assign(row, { status_code: 403, observer_error: false, error: 'Unexpected HTTP 403' });
+  await page.reload();
+  await expect(page.locator('#health-label')).toHaveText('Service access denied');
+  await expect(page.locator('#service-cards')).toContainText('Access denied');
+  await expect(page.locator('#health-detail')).toContainText('block automated clients');
+});
+
 test('service setup, edit, pause, resume, removal, and history work through the interface', async ({ page }) => {
   await page.getByRole('button', { name: 'Services', exact: true }).click();
   await page.getByRole('button', { name: 'Add service', exact: true }).click();

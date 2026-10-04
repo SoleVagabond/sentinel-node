@@ -10,6 +10,7 @@ test('invalid timestamps do not appear healthy', () => assert.equal(health(snaps
 test('future timestamp outside allowed clock skew is unknown', () => assert.equal(health(snapshot(), now - 60000).state, 'unknown'));
 test('outage takes precedence over slow response', () => assert.equal(health(snapshot({ endpoints: [{ status: 'Yellow' }, { status: 'Red' }] }), now).state, 'outage'));
 test('slow response is degraded', () => assert.equal(health(snapshot({ endpoints: [{ status: 'Yellow' }] }), now).state, 'degraded'));
+test('blocked monitor access is unknown rather than a website outage', () => assert.equal(health(snapshot({ endpoints: [{ status: 'Red', observer_error: true }] }), now).state, 'unknown'));
 test('empty, duplicate, and malformed telemetry are rejected', () => {
   const good = snapshot();
   for (const data of [null, snapshot({ endpoints: [] }), snapshot({ endpoints: [...good.endpoints, ...good.endpoints] }), snapshot({ last_updated: 'bad' }), snapshot({ stale_after_seconds: 999999 }), snapshot({ endpoints: [{ ...good.endpoints[0], latency_ms: null }] })]) assert.throws(() => validateSnapshot(data));

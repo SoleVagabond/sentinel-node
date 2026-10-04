@@ -93,6 +93,8 @@ node --check frontend/app.js
 
 Tests include actual loopback HTTP services, concurrent collection, incident transitions, timeout handling, configuration validation, bounded history, and frontend freshness rules. They do not contact configured public services or require AWS credentials.
 
+For a separate, explicitly authorized public-network exercise, run `python scripts/verify_live.py --allow-public-http`. It launches the packaged live application, checks actual websites and deliberate failure endpoints, and verifies persistent incident/delivery workflows using local fixtures. The [live verification report](docs/live-verification.md) records 35 completed workflows and the faults they uncovered.
+
 For browser checks, install the test dependencies and Chromium:
 
 ```console

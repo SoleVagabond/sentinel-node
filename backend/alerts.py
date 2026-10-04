@@ -2,6 +2,7 @@
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import hashlib
+from http.client import HTTPException
 import json
 import math
 import time
@@ -134,6 +135,8 @@ class NoRedirects(HTTPRedirectHandler):
 
 
 def validate_destination(url):
+    if not isinstance(url, str) or not url.isascii() or any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in url):
+        raise ValueError('Use an ASCII webhook URL; encode spaces and non-ASCII characters before saving.')
     parts = urlsplit(url)
     try:
         parts.port
@@ -168,7 +171,7 @@ class Webhook:
             code = error.code
             error.close()
             return code
-        except (URLError, OSError, TimeoutError):
+        except (URLError, OSError, TimeoutError, HTTPException):
             return None
 
 

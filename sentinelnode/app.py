@@ -135,7 +135,8 @@ class Application:
                 self.store.write(STATE_KEY, updated)
                 self.store.write('snapshot', snapshot)
                 self.store.save_observation(snapshot, config['retention_days'])
-                self.store.write('runner', {'last_tick': now(), 'error': None})
+                observer_error = next((row['error'] for row in snapshot['endpoints'] if row.get('observer_error')), None)
+                self.store.write('runner', {'last_tick': now(), 'error': observer_error})
             self._drain(config)
             return snapshot
         except (OSError, ValueError, sqlite3.Error) as error:
@@ -358,7 +359,7 @@ class Handler(BaseHTTPRequestHandler):
                             name = service['name']
                             if name.lstrip().startswith(('=', '+', '-', '@')):
                                 name = "'" + name
-                            writer.writerow([snapshot['last_updated'], service['id'], name, service['status'], service['status_code'], service['latency_ms']])
+                            writer.writerow([snapshot['last_updated'], service['id'], name, 'Unknown' if service.get('observer_error') else service['status'], service['status_code'], service['latency_ms']])
                     self.respond(output.getvalue().encode('utf-8-sig'), content_type='text/csv; charset=utf-8', filename='sentinel-observations.csv')
             elif parsed.path == '/api/backup':
                 with tempfile.TemporaryDirectory() as directory:

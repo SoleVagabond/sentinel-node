@@ -1,0 +1,322 @@
+{
+  "started_at": "2026-10-04T15:41:25.675180+00:00",
+  "mode": "live",
+  "checks": [
+    {
+      "name": "Portable live mode starts empty without demonstration controls",
+      "passed": true
+    },
+    {
+      "name": "Malformed webhook URL is rejected without changing configuration",
+      "passed": true
+    },
+    {
+      "name": "Portfolio HTTPS",
+      "passed": true,
+      "observation": {
+        "id": "0374e6fde9594a05",
+        "name": "Portfolio HTTPS",
+        "url": "https://solevagabond.github.io/",
+        "timestamp": "2026-10-04T15:41:26.258801+00:00",
+        "status_code": 200,
+        "latency_ms": 279.01,
+        "error": null,
+        "status": "Green"
+      }
+    },
+    {
+      "name": "Northline HTTPS",
+      "passed": true,
+      "observation": {
+        "id": "d59b0b6c86074214",
+        "name": "Northline HTTPS",
+        "url": "https://northline-cycle-devin.netlify.app/",
+        "timestamp": "2026-10-04T15:41:26.259493+00:00",
+        "status_code": 200,
+        "latency_ms": 362.8,
+        "error": null,
+        "status": "Green"
+      }
+    },
+    {
+      "name": "Expected HTTP 204",
+      "passed": true,
+      "observation": {
+        "id": "3cc35ca36bed4da7",
+        "name": "Expected HTTP 204",
+        "url": "https://httpbin.org/status/204",
+        "timestamp": "2026-10-04T15:41:26.259894+00:00",
+        "status_code": 204,
+        "latency_ms": 436.82,
+        "error": null,
+        "status": "Green"
+      }
+    },
+    {
+      "name": "Public HTTP 503",
+      "passed": true,
+      "observation": {
+        "id": "ef91602e703c47a8",
+        "name": "Public HTTP 503",
+        "url": "https://httpbin.org/status/503",
+        "timestamp": "2026-10-04T15:41:26.260238+00:00",
+        "status_code": 503,
+        "latency_ms": 440.58,
+        "error": "Unexpected HTTP 503",
+        "status": "Red",
+        "failure_kind": "http_status"
+      }
+    },
+    {
+      "name": "Public redirect",
+      "passed": true,
+      "observation": {
+        "id": "6c1373dca05e485b",
+        "name": "Public redirect",
+        "url": "https://httpbin.org/redirect/1",
+        "timestamp": "2026-10-04T15:41:26.260644+00:00",
+        "status_code": 200,
+        "latency_ms": 704.83,
+        "error": null,
+        "status": "Green"
+      }
+    },
+    {
+      "name": "Untrusted TLS certificate",
+      "passed": true,
+      "observation": {
+        "id": "fc60eb5ea9a546ea",
+        "name": "Untrusted TLS certificate",
+        "url": "https://self-signed.badssl.com/",
+        "timestamp": "2026-10-04T15:41:26.353140+00:00",
+        "status_code": null,
+        "latency_ms": 176.74,
+        "error": "TLS certificate verification failed",
+        "status": "Red",
+        "failure_kind": "tls"
+      }
+    },
+    {
+      "name": "Nonexistent DNS name",
+      "passed": true,
+      "observation": {
+        "id": "1b68ce9579f24b79",
+        "name": "Nonexistent DNS name",
+        "url": "https://sentinel-check.invalid/",
+        "timestamp": "2026-10-04T15:41:26.353904+00:00",
+        "status_code": null,
+        "latency_ms": 75.8,
+        "error": "DNS resolution failed",
+        "status": "Red",
+        "failure_kind": "dns"
+      }
+    },
+    {
+      "name": "Public response timeout",
+      "passed": true,
+      "observation": {
+        "id": "58566cc2335f4789",
+        "name": "Public response timeout",
+        "url": "https://httpbin.org/delay/3",
+        "timestamp": "2026-10-04T15:41:26.354150+00:00",
+        "status_code": null,
+        "latency_ms": 1044.75,
+        "error": "Connection timeout",
+        "status": "Red",
+        "failure_kind": "timeout"
+      }
+    },
+    {
+      "name": "Ninth service is rejected atomically",
+      "passed": true
+    },
+    {
+      "name": "Response-header contract returns without reading the announced body",
+      "passed": true
+    },
+    {
+      "name": "Actual slow response opens a degraded incident",
+      "passed": true
+    },
+    {
+      "name": "HTTP 503 escalates the same incident without duplication",
+      "passed": true
+    },
+    {
+      "name": "Recovery preserves acknowledgement and note and sends ordered transitions",
+      "passed": true
+    },
+    {
+      "name": "Receiver saves notification before losing its HTTP reply",
+      "passed": true
+    },
+    {
+      "name": "Real scheduled retry keeps one receipt from two requests",
+      "passed": true,
+      "elapsed_seconds": 34.71
+    },
+    {
+      "name": "Test delivery leaves service observations unchanged",
+      "passed": true
+    },
+    {
+      "name": "Restart preserves services, history, notes, and pending delivery",
+      "passed": true
+    },
+    {
+      "name": "Queued delivery resumes after process restart",
+      "passed": true
+    },
+    {
+      "name": "Permanent receiver rejection stops automatic retry",
+      "passed": true
+    },
+    {
+      "name": "Deliberate replay preserves identity and total attempt audit",
+      "passed": true
+    },
+    {
+      "name": "Webhook redirect is rejected without forwarding bearer authentication",
+      "passed": true
+    },
+    {
+      "name": "Malformed receiver response is retained as a pending delivery",
+      "passed": true
+    },
+    {
+      "name": "Malformed HTTP response does not abort the healthy endpoint",
+      "passed": true
+    },
+    {
+      "name": "Eight configured services execute concurrently",
+      "passed": true,
+      "elapsed_seconds": 0.392,
+      "sum_probe_seconds": 2.474
+    },
+    {
+      "name": "Overlapping manual checks have one writer and a clear rejection",
+      "passed": true
+    },
+    {
+      "name": "Scheduler produces repeated fresh observations",
+      "passed": true,
+      "added_snapshots": 3
+    },
+    {
+      "name": "Paused schedule stops new observations",
+      "passed": true
+    },
+    {
+      "name": "Manual check still works with schedule paused",
+      "passed": true
+    },
+    {
+      "name": "Consistent SQLite backup and CSV include actual observations",
+      "passed": true
+    },
+    {
+      "name": "Restore command succeeds into a new directory",
+      "passed": true
+    },
+    {
+      "name": "Restored workspace retains notes and starts with checks and delivery paused",
+      "passed": true
+    },
+    {
+      "name": "Second process cannot share a state directory",
+      "passed": true
+    },
+    {
+      "name": "Restored database integrity is intact",
+      "passed": true
+    }
+  ],
+  "public_observations": [
+    {
+      "id": "0374e6fde9594a05",
+      "name": "Portfolio HTTPS",
+      "url": "https://solevagabond.github.io/",
+      "timestamp": "2026-10-04T15:41:26.258801+00:00",
+      "status_code": 200,
+      "latency_ms": 279.01,
+      "error": null,
+      "status": "Green"
+    },
+    {
+      "id": "d59b0b6c86074214",
+      "name": "Northline HTTPS",
+      "url": "https://northline-cycle-devin.netlify.app/",
+      "timestamp": "2026-10-04T15:41:26.259493+00:00",
+      "status_code": 200,
+      "latency_ms": 362.8,
+      "error": null,
+      "status": "Green"
+    },
+    {
+      "id": "3cc35ca36bed4da7",
+      "name": "Expected HTTP 204",
+      "url": "https://httpbin.org/status/204",
+      "timestamp": "2026-10-04T15:41:26.259894+00:00",
+      "status_code": 204,
+      "latency_ms": 436.82,
+      "error": null,
+      "status": "Green"
+    },
+    {
+      "id": "ef91602e703c47a8",
+      "name": "Public HTTP 503",
+      "url": "https://httpbin.org/status/503",
+      "timestamp": "2026-10-04T15:41:26.260238+00:00",
+      "status_code": 503,
+      "latency_ms": 440.58,
+      "error": "Unexpected HTTP 503",
+      "status": "Red",
+      "failure_kind": "http_status"
+    },
+    {
+      "id": "6c1373dca05e485b",
+      "name": "Public redirect",
+      "url": "https://httpbin.org/redirect/1",
+      "timestamp": "2026-10-04T15:41:26.260644+00:00",
+      "status_code": 200,
+      "latency_ms": 704.83,
+      "error": null,
+      "status": "Green"
+    },
+    {
+      "id": "fc60eb5ea9a546ea",
+      "name": "Untrusted TLS certificate",
+      "url": "https://self-signed.badssl.com/",
+      "timestamp": "2026-10-04T15:41:26.353140+00:00",
+      "status_code": null,
+      "latency_ms": 176.74,
+      "error": "TLS certificate verification failed",
+      "status": "Red",
+      "failure_kind": "tls"
+    },
+    {
+      "id": "1b68ce9579f24b79",
+      "name": "Nonexistent DNS name",
+      "url": "https://sentinel-check.invalid/",
+      "timestamp": "2026-10-04T15:41:26.353904+00:00",
+      "status_code": null,
+      "latency_ms": 75.8,
+      "error": "DNS resolution failed",
+      "status": "Red",
+      "failure_kind": "dns"
+    },
+    {
+      "id": "58566cc2335f4789",
+      "name": "Public response timeout",
+      "url": "https://httpbin.org/delay/3",
+      "timestamp": "2026-10-04T15:41:26.354150+00:00",
+      "status_code": null,
+      "latency_ms": 1044.75,
+      "error": "Connection timeout",
+      "status": "Red",
+      "failure_kind": "timeout"
+    }
+  ],
+  "archive_sha256": "d147652f1bb528808b635263d9fb1b756869b00e216f097ba474d63b82a813a6",
+  "completed_at": "2026-10-04T15:42:56.013419+00:00"
+}

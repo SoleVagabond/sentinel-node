@@ -18,7 +18,9 @@ python sentinel.pyz
 
 Open **http://127.0.0.1:8798/**. Leave the process running for scheduled checks. Stop with **Ctrl+C** and start it again to resume the saved workspace. Closing the browser does not stop monitoring; turning off or suspending the computer does. This release does not install an operating-system background service.
 
-Live mode starts empty, with scheduled checks every 30 seconds and notifications disabled. Add a service through **Services**, using an authorized HTTP/HTTPS URL, expected response codes, timeout, and slow-response threshold. Up to eight services can be configured. A completed check establishes their health; configuration alone does not.
+Live mode starts empty, with scheduled checks every 30 seconds and notifications disabled. Add a service through **Services**, using an authorized HTTP/HTTPS URL, expected response codes, timeout, and slow-response threshold. Up to eight services can be configured. A completed check establishes their health; configuration alone does not. Encode spaces and non-ASCII characters in URLs before saving; malformed URLs and invalid ports are rejected.
+
+The process needs outbound network access to check external websites. An operating-system permission denial reports **Monitor needs attention** rather than opening a website incident. DNS, TLS, timeout, and unexpected HTTP status failures have distinct diagnostics. An unexpected HTTP 401/403 means the monitoring request was denied access; it does not prove the website is unavailable to all visitors.
 
 Use `--port 8799` for a different browser port and `--state-dir PATH` for a different private directory. The initial `--interval` flag accepts 5–3600 seconds. Saved settings take precedence on subsequent launches. **Settings** changes the ongoing schedule and retention. **Check now** performs a manual check even when the schedule is paused.
 
@@ -91,4 +93,4 @@ Checks measure response headers, not body correctness or continuous uptime. Sock
 
 ## Verification
 
-The [release scope](application-scope.md) defines the bounded application. Tests use real loopback HTTP for configuration, incident transitions, persistence, retries, deduplication, exports, and portable launch. The browser suite covers desktop and two phone widths, native dialogs and keyboard focus, automated accessibility rules, and both empty live onboarding and the demonstration. See the [verification record](validation.md) for actual completed runs.
+The [release scope](application-scope.md) defines the bounded application. Tests use real loopback HTTP for configuration, incident transitions, persistence, retries, deduplication, exports, and portable launch. The browser suite covers desktop and two phone widths, native dialogs and keyboard focus, automated accessibility rules, and both empty live onboarding and the demonstration. The [live verification](live-verification.md) adds actual public website checks and 35 packaged application workflows. See the [verification record](validation.md) for actual completed runs.

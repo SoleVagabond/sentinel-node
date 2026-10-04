@@ -3,6 +3,7 @@
 HTTP checks use the Python standard library. AWS dependencies load only on S3 use.
 """
 import argparse
+from http.client import HTTPException
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
@@ -11,6 +12,7 @@ import math
 import os
 from pathlib import Path
 import socket
+import ssl
 import threading
 import time
 from urllib.error import HTTPError, URLError
@@ -43,7 +45,10 @@ def validate_config(config):
         if endpoint['id'] in seen:
             raise ValueError('Endpoint IDs must be unique.')
         seen.add(endpoint['id'])
+        if not endpoint['url'].isascii() or any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in endpoint['url']):
+            raise ValueError('Use an ASCII URL; encode spaces and non-ASCII characters before saving.')
         url = urlsplit(endpoint['url'])
+        url.port
         if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.query or url.fragment:
             raise ValueError('Use an HTTP(S) URL without credentials, query secrets, or fragments.')
         for key, default, low, high in [('timeout_seconds', 5, .05, 10), ('degraded_after_ms', 1000, 1, 30000)]:
@@ -66,6 +71,7 @@ def check_endpoint(endpoint, opener=urlopen, clock=time.perf_counter):
             result['status_code'] = response.status
         if result['status_code'] not in endpoint.get('expected_statuses', [200]):
             result['error'] = f"Unexpected HTTP {result['status_code']}"
+            result['failure_kind'] = 'http_status'
         else:
             result['status'] = 'Green'
     except HTTPError as error:
@@ -74,13 +80,30 @@ def check_endpoint(endpoint, opener=urlopen, clock=time.perf_counter):
             result['status'] = 'Green'
         else:
             result['error'] = f'Unexpected HTTP {error.code}'
+            result['failure_kind'] = 'http_status'
         error.close()
     except (TimeoutError, socket.timeout):
         result['error'] = 'Connection timeout'
+        result['failure_kind'] = 'timeout'
     except URLError as error:
-        result['error'] = 'Connection timeout' if isinstance(error.reason, (TimeoutError, socket.timeout)) else 'DNS, TLS, or connection failure'
+        reason = error.reason
+        if isinstance(reason, PermissionError) or getattr(reason, 'winerror', None) == 10013:
+            result.update(error='Monitor network access blocked by the operating system', failure_kind='network_permission', observer_error=True)
+        elif isinstance(reason, ssl.SSLCertVerificationError):
+            result.update(error='TLS certificate verification failed', failure_kind='tls')
+        elif isinstance(reason, socket.gaierror):
+            result.update(error='DNS resolution failed', failure_kind='dns')
+        elif isinstance(reason, (TimeoutError, socket.timeout)):
+            result.update(error='Connection timeout', failure_kind='timeout')
+        else:
+            result.update(error='DNS, TLS, or connection failure', failure_kind='connection')
+    except PermissionError:
+        result.update(error='Monitor network access blocked by the operating system', failure_kind='network_permission', observer_error=True)
+    except (HTTPException, ValueError):
+        result.update(error='Monitor could not complete the HTTP request', failure_kind='request')
     except OSError:
         result['error'] = 'Connection failure'
+        result['failure_kind'] = 'connection'
     result['latency_ms'] = round(max(0, clock() - started) * 1000, 2)
     if result['status'] == 'Green' and result['latency_ms'] > endpoint.get('degraded_after_ms', 1000):
         result['status'] = 'Yellow'
@@ -97,6 +120,8 @@ def build_snapshot(results, previous=None, mode='live', sampled_at=None, interva
     previous = previous or {}
     incidents = [dict(incident) for incident in previous.get('incidents', [])]
     for result in results:
+        if result.get('observer_error'):
+            continue
         active = next((i for i in reversed(incidents) if i['endpoint_id'] == result['id'] and i['resolved_at'] is None), None)
         if result['status'] != 'Green':
             if active is None:

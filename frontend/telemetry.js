@@ -17,6 +17,7 @@
     const age = (now - Date.parse(data.last_updated)) / 1000;
     if (!Number.isFinite(age) || age < -30) return { state: 'unknown', label: 'Invalid telemetry time', age: null };
     if (age > data.stale_after_seconds) return { state: 'stale', label: 'Telemetry is stale', age };
+    if (data.endpoints.some(item => item.observer_error === true)) return { state: 'unknown', label: 'Monitor network access unavailable', age: Math.max(0, age) };
     if (data.endpoints.some(item => item.status === 'Red')) return { state: 'outage', label: 'Service outage detected', age: Math.max(0, age) };
     if (data.endpoints.some(item => item.status === 'Yellow')) return { state: 'degraded', label: 'Service response degraded', age: Math.max(0, age) };
     return { state: 'healthy', label: 'All services operational', age: Math.max(0, age) };

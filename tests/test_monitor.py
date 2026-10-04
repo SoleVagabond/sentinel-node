@@ -1,10 +1,13 @@
 from contextlib import nullcontext
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
+from http.client import BadStatusLine
 import json
 from pathlib import Path
 import sys
 import tempfile
+import socket
+import ssl
 import threading
 import unittest
 from unittest.mock import patch
@@ -75,6 +78,31 @@ class MonitorTests(unittest.TestCase):
 
     def test_connection_failure(self):
         self.assertEqual(self.probe(failure=URLError('DNS failure'))['status'], 'Red')
+
+    def test_network_permission_is_monitor_failure_without_fictitious_incidents(self):
+        for failure in (PermissionError(13, 'Blocked'), URLError(PermissionError(13, 'Blocked'))):
+            blocked = self.probe(failure=failure)
+            self.assertTrue(blocked['observer_error'])
+            self.assertEqual(blocked['failure_kind'], 'network_permission')
+            self.assertEqual(monitor.build_snapshot([blocked])['incidents'], [])
+            prior = monitor.build_snapshot([self.probe(code=503)])
+            self.assertIsNone(monitor.build_snapshot([blocked], prior)['incidents'][0]['resolved_at'])
+
+    def test_dns_and_invalid_certificate_have_distinct_diagnostic_results(self):
+        for failure, kind in [(socket.gaierror(-2, 'DNS failed'), 'dns'), (ssl.SSLCertVerificationError(1, 'Untrusted'), 'tls')]:
+            row = self.probe(failure=URLError(failure))
+            self.assertEqual(row['failure_kind'], kind)
+            self.assertFalse(row.get('observer_error', False))
+
+    def test_invalid_http_response_does_not_abort_other_probes(self):
+        result = self.probe(failure=BadStatusLine('invalid HTTP'))
+        self.assertEqual(result['failure_kind'], 'request')
+        self.assertEqual(result['status'], 'Red')
+
+    def test_url_controls_unicode_spaces_and_invalid_ports_are_rejected(self):
+        for url in ['http://127.0.0.1/bad path', 'https://example.com/line\nbreak', 'https://example.com/caf\u00e9', 'https://example.com:bad/', 'https://example.com/\x7f']:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                monitor.validate_config({'endpoints': [dict(ENDPOINT, url=url)]})
 
     def test_configuration_rejects_unsafe_or_unbounded_values(self):
         for field, value in [('url', 'file:///etc/passwd'), ('url', 'https://a:b@example.com'), ('url', 'https://example.com/?token=secret'), ('timeout_seconds', 11), ('timeout_seconds', float('nan')), ('degraded_after_ms', 0), ('expected_statuses', [True])]:

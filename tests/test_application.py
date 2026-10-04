@@ -94,6 +94,31 @@ class ApplicationTests(unittest.TestCase):
         self.assertEqual(self.call('/sentinel.db')[0], 404)
         self.assertEqual(self.call('/api/state', headers={'Origin': 'https://other.example'})[0], 403)
 
+    def test_permission_failure_records_monitor_attention_without_service_incident(self):
+        results = deepcopy(self.app.store.read('snapshot')['endpoints'])
+        for row in results:
+            row.update(status='Red', status_code=None, observer_error=True,
+                       failure_kind='network_permission', error='Monitor network access blocked by the operating system')
+        with patch('sentinelnode.app.collect', return_value=results):
+            self.app.check()
+        self.assertIn('network access blocked', self.app.state()['runner']['error'])
+        self.assertEqual(self.app.store.incidents(), [])
+        self.assertEqual(self.app.store.deliveries(), [])
+        self.assertIn(',Unknown,', self.call('/api/export.csv')[1].decode('utf-8-sig'))
+        self.app.check()
+        self.assertIsNone(self.app.state()['runner']['error'])
+
+    def test_invalid_url_save_does_not_stop_scheduler_or_poison_healthy_services(self):
+        self.app.start()
+        for url in [f'http://127.0.0.1:{self.server.server_port}/bad path', f'http://127.0.0.1:{self.server.server_port}/line\nbreak']:
+            self.assertEqual(self.call('/api/service-save', self.service(url=url))[0], 400)
+        self.assertTrue(self.app.worker.is_alive())
+        self.app.wake.set()
+        deadline = time.monotonic() + 3
+        while self.app.running and time.monotonic() < deadline:
+            time.sleep(.01)
+        self.assertEqual(len(self.app.store.read('snapshot')['endpoints']), 2)
+
     def test_incident_acknowledgement_does_not_fake_recovery(self):
         self.app.fixture = 'outage'
         self.app.check()

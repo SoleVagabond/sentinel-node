@@ -1,6 +1,7 @@
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.client import BadStatusLine
 import json
 from pathlib import Path
 import sys
@@ -242,8 +243,17 @@ class OutboxTests(unittest.TestCase):
         self.assertEqual(len(state['deliveries']), 1)
         self.assertEqual(state['deliveries'][0]['event']['id'], event_id)
 
+    def test_malformed_webhook_response_is_saved_as_unconfirmed_delivery(self):
+        self.save()
+        sender = alerts.Webhook('http://127.0.0.1/receiver')
+        with patch.object(sender.opener, 'open', side_effect=BadStatusLine('not HTTP')):
+            result = alerts.dispatch(self.store, sender, now=NOW)
+        self.assertEqual(result['deliveries'][0]['status'], 'pending')
+        self.assertEqual(result['deliveries'][0]['attempts'], 1)
+        self.assertEqual(result['deliveries'][0]['last_error'], 'No acknowledgement')
+
     def test_destination_and_token_validation(self):
-        for url in ['http://example.com/notify', 'https://u:p@example.com/', 'https://example.com/?token=a', 'file:///tmp/x', 'https://example.com:bad/', 'https://example.com/#a']:
+        for url in ['http://example.com/notify', 'https://u:p@example.com/', 'https://example.com/?token=a', 'file:///tmp/x', 'https://example.com:bad/', 'https://example.com/#a', 'http://127.0.0.1/bad path', 'https://example.com/line\nbreak', 'https://example.com/caf\u00e9']:
             with self.subTest(url=url), self.assertRaises(ValueError): alerts.Webhook(url)
         for timeout in [True, float('nan'), 0, 6]:
             with self.assertRaises(ValueError): alerts.Webhook('https://example.com/', timeout=timeout)

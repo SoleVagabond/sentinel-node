@@ -75,6 +75,7 @@
     const rows = enabled.map(service => snapshot.endpoints.find(row => row.id === service.id && row.url === service.url));
     if (rows.some(row => !row)) return { kind: 'unknown', label: 'Waiting for updated checks', detail: 'A service has changed or was just added. Its next completed check will establish its health.' };
     const kind = rows.some(row => row.status === 'Red') ? 'outage' : rows.some(row => row.status === 'Yellow') ? 'degraded' : 'healthy';
+    if (kind === 'outage' && rows.filter(row => row.status === 'Red').every(row => [401, 403].includes(row.status_code))) return { kind, label: 'Service access denied', detail: 'The endpoint rejected the monitor’s request. It may require authorized access or block automated clients.' };
     return { kind, label: { outage: 'Service outage detected', degraded: 'Slow service response detected', healthy: 'Checked services operational' }[kind],
       detail: `${enabled.length} enabled service${enabled.length === 1 ? '' : 's'} · ${config.services.length - enabled.length} paused · every ${config.interval_seconds} seconds` };
   }
@@ -110,11 +111,12 @@
       const observed = data.snapshot.endpoints?.find(row => row.id === service.id && row.url === service.url);
       const card = element('article', undefined, 'service-card');
       const top = element('div', undefined, 'card-top'); top.append(element('h3', service.name));
-      const label = !service.enabled ? 'Paused' : !observed ? 'Not checked' : !trustworthy ? 'Last observed' : { Green: 'Operational', Yellow: 'Degraded', Red: 'Outage' }[observed.status];
+      const label = !service.enabled ? 'Paused' : !observed ? 'Not checked' : !trustworthy ? 'Last observed' : observed.status === 'Red' && [401, 403].includes(observed.status_code) ? 'Access denied' : { Green: 'Operational', Yellow: 'Degraded', Red: 'Outage' }[observed.status];
       top.append(badge(label, trustworthy && service.enabled ? observed?.status : 'Unknown'));
       card.append(top, element('p', service.url, 'url'));
       const readings = element('div', undefined, 'readings'); readings.append(element('span', `HTTP ${observed?.status_code ?? '—'}`), element('span', observed ? `${Math.round(observed.latency_ms)} ms` : 'No observation'));
       card.append(readings); if (observed?.error) card.append(element('p', observed.error, 'muted small'));
+      if (observed?.status === 'Red' && [401, 403].includes(observed.status_code)) card.append(element('p', 'This endpoint rejected the automated check. Inspect its access requirements.', 'muted small'));
       return card;
     }));
   }
@@ -197,7 +199,7 @@
       const average = rows.length ? rows.reduce((sum, row) => sum + row.latency_ms, 0) / rows.length : 0;
       $('history-summary').textContent = `${response.samples.length} saved snapshots · ${rows.length} service checks · ${green} operational results · average ${Math.round(average)}ms. Chart and table use the latest ${response.limit} snapshots in this range.`;
       $('history-rows').replaceChildren(...rows.slice(-30).reverse().map(row => {
-        const tr = element('tr'); for (const value of [date(row.checked_at), row.name, { Green: 'Operational', Yellow: 'Degraded', Red: 'Outage' }[row.status], row.status_code ?? 'No response', `${Math.round(row.latency_ms)} ms`]) tr.append(element('td', value)); return tr;
+        const tr = element('tr'); for (const value of [date(row.checked_at), row.name, row.observer_error ? 'Monitor blocked' : row.status === 'Red' && [401, 403].includes(row.status_code) ? 'Access denied' : { Green: 'Operational', Yellow: 'Degraded', Red: 'Outage' }[row.status], row.status_code ?? 'No response', `${Math.round(row.latency_ms)} ms`]) tr.append(element('td', value)); return tr;
       }));
       if (!rows.length) { empty($('history-chart'), 'No saved checks in this range.'); return; }
       const points = response.samples.filter(snapshot => snapshot.endpoints.length).map(snapshot => snapshot.endpoints.reduce((sum, row) => sum + row.latency_ms, 0) / snapshot.endpoints.length);
