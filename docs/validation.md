@@ -2,6 +2,18 @@
 
 October 4, 2026
 
+## Guided setup and inspectable history: 163 checks passed
+
+The interface update passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37217553493) at commit `430b40f`: **72 Python, 11 frontend, four packaged-SDK contracts, 75 browser workflows, and one mocked infrastructure scenario**. All three jobs succeeded on a fresh Linux checkout. The 72 Python checks also passed locally on Windows.
+
+The 15 added browser checks exercise five journeys at desktop, 375px, and 320px: optional advanced settings with saved custom values and unsaved drafts; paused and unsaved notification settings; retry eligibility and cancellation; overview shortcuts, automatic history filters, and keyboard chart inspection; and missing HTTP replies plus out-of-order filter responses. The live onboarding journey now starts from the direct Add your first service action. Automated accessibility checks include the expanded advanced-settings form, and all six workspaces retain their layout/keyboard checks.
+
+The countdown test initially exposed problems in its own controlled clock and page setup. It now controls displayed time while leaving page timers running normally, and loads a new document instead of retaining old state through a hash-only navigation. All assertions remain; no automatic test retries or accessibility rules were suppressed. The waiting-time UI scenario uses controlled state and time; the earlier live verification separately records real retry waits.
+
+Manual Windows browser checks confirmed the simpler form, real service-history shortcuts, exact values through the slider's Home/arrow keys, and automatic filtering against the retained public website observations. A separate live workspace sent a test to an actual local HTTP 503 receiver: it showed a 30-second retry deadline, disabled early retry, and kept cancellation available. The test was canceled afterward. The updated portable program was launched against the original operator database; its three services and saved history were retained, all three returned HTTP 200, and notifications remained disabled.
+
+This release changes the operator interface; the monitoring and storage backend is unchanged from the [35-workflow live verification](live-verification.md). That earlier report keeps its original archive hash and observations. The current release has a new package hash because its HTML, CSS, and JavaScript changed. These checks establish implemented behavior and accessibility checks, not independent first-time user research.
+
 ## Real websites and network-failure corrections: 148 checks passed
 
 The corrected application passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37214468289) at commit `ce29717`. Application, browser, and infrastructure jobs all succeeded on a fresh Linux checkout: **72 Python, 11 frontend, four packaged-SDK contracts, 60 browser workflows, and one mocked infrastructure scenario**. Python and frontend checks also passed on Windows. The browser scenarios cover desktop, 375px, and 320px; no automatic test retries or accessibility rule suppressions were added.
