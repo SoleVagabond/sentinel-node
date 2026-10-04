@@ -6,7 +6,9 @@ Sentinel is a single-operator HTTP monitoring application. Configure services, r
 
 The application runs on your computer or a server with Python 3.13 and no runtime package installation. The optional AWS dashboard remains a separate deployment path, with live deployment pending. See the [application guide](docs/application.md), [case study](docs/case-study.md), and [verification record](docs/validation.md).
 
-**Try the application:** `python scripts/run_app.py --demo`, then open **http://127.0.0.1:8798/**. Two real loopback services and a receiver let you exercise outages, acknowledgement, recovery, and lost replies. Demo data is saved separately from live configuration.
+**Download Sentinel 1.0.0:** [Portable application and checksum](https://github.com/SoleVagabond/sentinel-node/releases/tag/v1.0.0). Extract the ZIP, read QUICKSTART.md, and run StartSentinel.cmd on Windows, or `python3.13 sentinel.pyz --port 8799` on Linux/macOS. Open **http://127.0.0.1:8799/**. Python 3.13 is required. Live mode starts empty; your data stays in your user directory.
+
+**Try from source:** `python scripts/run_app.py --demo`, then open **http://127.0.0.1:8798/**. Two real loopback services and a receiver let you exercise outages, acknowledgement, recovery, and lost replies. Demo data is saved separately from live configuration.
 
 **Quick browser preview:** [Recorded incident replay](https://solevagabond.github.io/lab.html#sentinel/outage/0). This static portfolio preview replays local evidence; it does not run the operator application or monitor public services.
 
@@ -35,6 +37,8 @@ python work/sentinel.pyz --demo
 ```
 
 The reproducible `.pyz` contains the program and dashboard. Copy it to a computer with Python 3.13 and run `python sentinel.pyz` for a live workspace. The [Project checks workflow](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml) publishes this package as the `sentinel-application` artifact after its application checks pass. No Node.js or cloud account is required to run it.
+
+The versioned release adds a Windows launcher, a short setup guide, and SHA-256 checksums. GitHub builds and attaches its download after all three check jobs pass on the release tag. To reproduce it from that checkout, run `python scripts/package_release.py --version 1.0.0 --source-commit FULL_COMMIT_SHA`. Only the five allowlisted program/guide files enter the download; saved workspaces are excluded.
 
 ![Original local incident lab showing an HTTP service outage](docs/evidence/outage.png)
 

@@ -4,6 +4,8 @@ Sentinel is a private, single-operator HTTP monitoring workspace. It has a compl
 
 ## Start and stop
 
+For the ready-to-run download, get [Sentinel 1.0.0](https://github.com/SoleVagabond/sentinel-node/releases/tag/v1.0.0), extract the ZIP, and follow its QUICKSTART.md. The Windows launcher opens the application on port **8799**; source and direct archive commands below default to **8798**. Both use the same private workspace format. Python 3.13 is required for either route.
+
 From a source checkout:
 
 ```console
