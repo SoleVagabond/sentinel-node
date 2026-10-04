@@ -52,7 +52,7 @@ $env:SENTINEL_WEBHOOK_TOKEN = '<your receiver token>'
 python sentinel.pyz
 ```
 
-The token stays out of the database, UI, exports, and source repository. Restart to change it. The receiver must accept Sentinel's JSON payload and deduplicate its `event.id`, also supplied as the `Idempotency-Key` header. Arbitrary third-party webhook formats may require an adapter. See the [payload contract and retry behavior](notifications.md).
+The token stays out of the database, UI, exports, and source repository. Restart to change it. The receiver must accept Sentinel's JSON payload and deduplicate the payload’s `id`, also supplied as the `Idempotency-Key` header. Arbitrary third-party webhook formats may require an adapter. See the [payload contract and retry behavior](notifications.md).
 
 Test notifications exercise delivery without creating incidents. Failed deliveries use bounded exponential retries, with at most five attempts per cycle. Live retries start at 30 seconds; the demonstration starts at one second. Retry due deliveries respects their eligible time. Permanent failures stop automatically. A deliberate **Retry failed notification** starts another finite cycle with the original ID and retains total attempt counts. Acknowledgement means an HTTP acceptance, not proof that a person received a message.
 
@@ -62,7 +62,7 @@ Pausing delivery preserves the pending queue, which resumes when enabled. Transi
 
 The private directory contains `sentinel.db`, its SQLite WAL files while active, and a process-ownership lock. A completed observation, incident transitions, and newly queued notifications commit together. Delivery results commit after the HTTP attempt. If an observation fails, its transaction rolls back and the previous completed observation remains available; the scheduler continues trying.
 
-Observations retain 1–30 days, subject to a maximum of 20,000 snapshots. At a five-second interval that cap is roughly 28 hours, even if more days are selected. Retention is applied after completed checks. The chart loads up to 500 snapshots; CSV exports up to 20,000. A removed service's observations remain in **All services** history until retention removes them. Incident notes and delivery journals persist independently; the interface shows the latest 200 records plus open incidents and pending deliveries. Journal storage can grow over time. Make backups and check available disk space.
+Observations retain 1–30 days, subject to a maximum of 20,000 snapshots. At a five-second interval that cap is roughly 28 hours, even if more days are selected. Retention is applied after completed checks. The chart loads up to 500 snapshots; CSV exports up to 20,000. A removed service's observations remain in **All services** history until retention removes them. Incident notes and delivery journals persist independently; the interface prioritizes open incidents within its 200-incident view and includes pending deliveries alongside the latest 200 delivery records. Journal storage can grow over time. Make backups and check available disk space.
 
 Use **Settings → Download database backup** for a consistent SQLite backup while running. The downloaded file includes private URLs, observations, incident notes, and notification payloads. Store it privately. Copying only an active `sentinel.db` file can omit uncheckpointed WAL data.
 

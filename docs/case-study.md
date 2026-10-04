@@ -1,6 +1,6 @@
-# SentinelNode: making a status dashboard trustworthy
+# SentinelNode: from HTTP checks to an operator workflow
 
-Self-directed systems and monitoring project. Verification covers the local application, desktop and phone-width browser workflows, and simulated infrastructure on Windows and fresh Linux checkouts. Live deployment is pending.
+Self-directed systems and monitoring project. The private application runs on a computer or server; its explicit demonstration uses real loopback HTTP. The separate AWS dashboard has checked infrastructure configuration, with live cloud deployment pending.
 
 ## Problem
 
@@ -16,16 +16,32 @@ Incident alerts now have a durable outbox, stable event IDs, bounded backoff, an
 
 A local incident lab provides actual HTTP services whose behavior can be changed deliberately. It demonstrates slow responses, HTTP failures, paused telemetry, and recovery without requiring cloud accounts or presenting sample data as live customer infrastructure.
 
+The 1.0 application gives one operator the full workflow: add and configure services, schedule or run checks, investigate and acknowledge incidents, confirm recovery, inspect and retry delivery, and export or back up the records. Live mode starts empty. Its separate demonstration seeds two loopback services and a local receiver. A portable Python archive includes the dashboard and requires no runtime packages.
+
+SQLite replaces paired files in this application. The observation, incident changes, and notification outbox commit in one transaction. Incident annotations and the delivery journal persist independently of the bounded working snapshot. A process lock prevents competing instances from owning one state directory. Administration stays on loopback, with host/origin checks and a session token for browser mutations. A database backup restores into a new directory with checks and notifications paused for inspection.
+
+```mermaid
+flowchart LR
+  O[Operator: configure services] --> M[Scheduled or manual HTTP checks]
+  M --> D[SQLite transaction: observation, incidents, outbox]
+  D --> V[Overview, incidents, history]
+  V --> A[Acknowledge and annotate]
+  A --> D
+  D --> N[Finite webhook retries]
+  N --> J[Saved delivery journal]
+  D --> B[CSV export and consistent backup]
+```
+
 The cloud configuration uses a private S3 origin behind CloudFront, uploads its frontend assets, restricts the monitor's S3 permissions to the telemetry objects, and serializes writes. A clean, pinned SDK package replaces the prebuilt platform-specific directory.
 
 ## Evidence and tradeoffs
 
 A review found two history failure cases: malformed optional history could make a valid current observation unavailable, and a partially completed write could show history newer than the displayed status snapshot. History now has its own validation and timestamp boundary. The new unit and browser checks demonstrate that valid current health remains available when optional history fails, without implying that a newer check completed.
 
-The notification release passed 59 application checks, 30 browser scenarios, and one Terraform security simulation: 90 checks total. The browser suite exercises desktop and two phone widths, including delivery order, lost replies, receiver deduplication, keyboard focus, layout, and automated accessibility rules. The actual HTTP recording retains five unique notifications from six accepted requests. The full [verification record](validation.md) links the fresh Linux run and distinguishes observed results from remaining deployment work.
+The earlier notification-control release passed 99 checks across application behavior, browser scenarios, and a mocked infrastructure scenario. The application adds real configuration, restart persistence, atomic rollback, incident notes, deliberate failed-delivery replay, CSV and backup downloads, restoration, empty live onboarding, and archive launch checks. The full [verification record](validation.md) records completed releases and links their fresh Linux runs. The original HTTP recording remains unchanged: five unique notifications from six accepted requests.
 
-The implementation deliberately keeps a small operational scope. It measures HTTP response headers and sampled availability rather than claiming full application correctness or continuous uptime. History is bounded and does not replace long-term observability storage. [Notification delivery](notifications.md) is verified locally, with finite retries and receiver-side deduplication; AWS notification integration and multi-region monitoring remain outside this release.
+The implementation keeps a defined single-operator scope. It measures HTTP response headers and sampled availability rather than continuous uptime. Observation retention is bounded; durable incident and delivery journals require storage and backups. [Notification delivery](notifications.md) has finite retries and receiver deduplication. Teams, public admin login, process supervision, monitor-heartbeat alerts, and verified AWS notification integration remain outside 1.0. The [application guide](application.md) explains these operating boundaries.
 
-## Next release gate
+## Separate cloud verification
 
-Verify an intentional cloud deployment with a representative authorized service after AWS account prerequisites are resolved. Demonstrate both a service outage and an interruption to the monitoring path before presenting the system as deployed monitoring work. The local incident lab demonstrates these transitions but does not replace that cloud evidence.
+An intentional cloud deployment requires resolved AWS account prerequisites and a representative authorized service. Both service failure and monitoring-path interruption must be observed before claiming deployed cloud operation. This is separate from the finished local application's workflow; local evidence establishes no cloud uptime or customer usage.

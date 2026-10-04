@@ -178,6 +178,12 @@ test('keyboard, accessible forms, and layouts work across every workspace', asyn
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
+    if (view === 'History' && testInfo.project.use.viewport.width < 600) {
+      const table = page.getByRole('region', { name: 'Saved observation table', exact: true });
+      await table.focus();
+      await page.keyboard.press('ArrowRight');
+      await expect.poll(() => table.evaluate(node => node.scrollLeft)).toBeGreaterThan(0);
+    }
   }
   await page.getByRole('button', { name: 'Services', exact: true }).click();
   await page.getByRole('button', { name: 'Add service', exact: true }).click();
