@@ -2,16 +2,16 @@
 
 October 4, 2026
 
-## Notification release: 90 checks passed
+## Notification controls and Windows recovery: 99 checks passed
 
-The notification release passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37179009669) at commit `5b69458` on a fresh Linux checkout. All three jobs succeeded. The backend also passed locally on Windows. No AWS resource or external notification recipient was used.
+The notification control fix passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37180161026) at commit `f12c89a` on a fresh Linux checkout. All three jobs succeeded. All 48 backend tests also passed locally on Windows. No AWS resource or external notification recipient was used.
 
 | Current release check | Result |
 | --- | --- |
-| Python unit and real loopback HTTP integration | 45 passed |
+| Python unit and real loopback HTTP integration | 48 passed |
 | Frontend telemetry validation and freshness | 10 passed |
 | Packaged SDK/S3 contracts with stubbed responses | 4 passed |
-| Browser workflows across desktop, 375px, and 320px | 30 passed |
+| Browser workflows across desktop, 375px, and 320px | 36 passed |
 | Mocked infrastructure security scenario | 1 passed |
 | JavaScript syntax, clean packaging, Terraform formatting/schema validation | Passed |
 | Independent notification recording | Six actual HTTP stages verified; five unique notifications from six accepted requests |
@@ -19,6 +19,10 @@ The notification release passed [GitHub Actions](https://github.com/SoleVagabond
 Notification checks exercise opening/escalation/recovery, ordered delivery, due-time backoff, retry exhaustion, permanent failures, restart recovery, checkpoint preservation after a partial telemetry write, bounded retention, queue saturation without eviction, malformed state, bearer-token redirect protection, and real connection loss after acceptance. The browser confirms that unavailable delivery history or a failed receiver does not hide valid current service health. It retains keyboard, layout, and automated accessibility coverage.
 
 The lost-reply browser test waits for the completed incident observation before selecting its delivery, avoiding accidental inspection of an earlier notification. Receiver changes also disable scenario controls until the setting has finished. The passing suite has no automatic test retries or suppressed scan rules.
+
+Receiver controls now confirm their setting, and a direct **Send test notification** exercises the actual local HTTP receiver without creating a service incident. Retry explains empty queues and due times, or reports attempted and acknowledged counts. The latest test result updates after a background acknowledgement. New browser cases exercise these controls and receipt deduplication at all three sizes.
+
+Inspection of the original Windows session found that polling could hold an outbox file open during atomic replacement, raising `PermissionError` and stopping the sampling thread. LocalStore now serializes its reads and writes within the process; a regression test verifies complete concurrent reads during repeated writes. Background collection preserves prior state after a failed check and tries again on the next tick. The same local server on port 8796 was restarted with its retained state, all controls were exercised in the browser, and continuing fresh observations were confirmed. Existing failed records were preserved.
 
 The [six-step notification recording](evidence/notification-delivery.json) uses real retry due times, not a simulated clock. Its final five unique receiver notifications come from six accepted requests. The [delivery design and operating limits](notifications.md) distinguish acknowledgement, finite retries, receiver deduplication, and remaining cloud integration.
 
