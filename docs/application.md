@@ -20,6 +20,8 @@ Open **http://127.0.0.1:8798/**. Leave the process running for scheduled checks.
 
 Live mode starts empty, with scheduled checks every 30 seconds and notifications disabled. Add a service through **Services**, using an authorized HTTP/HTTPS URL, expected response codes, timeout, and slow-response threshold. Up to eight services can be configured. A completed check establishes their health; configuration alone does not. Encode spaces and non-ASCII characters in URLs before saving; malformed URLs and invalid ports are rejected.
 
+The empty Overview has a direct **Add your first service** action. Start with its name and website URL. **Advanced check settings** contains the timeout, slow-response threshold, and expected HTTP codes; the defaults are five seconds, 1,000 milliseconds, and HTTP 200. Editing a service with custom settings reveals them automatically. Overview counts open the related workspace, and service names open filtered history.
+
 The process needs outbound network access to check external websites. An operating-system permission denial reports **Monitor needs attention** rather than opening a website incident. DNS, TLS, timeout, and unexpected HTTP status failures have distinct diagnostics. An unexpected HTTP 401/403 means the monitoring request was denied access; it does not prove the website is unavailable to all visitors.
 
 Use `--port 8799` for a different browser port and `--state-dir PATH` for a different private directory. The initial `--interval` flag accepts 5–3600 seconds. Saved settings take precedence on subsequent launches. **Settings** changes the ongoing schedule and retention. **Check now** performs a manual check even when the schedule is paused.
@@ -58,6 +60,8 @@ The token stays out of the database, UI, exports, and source repository. Restart
 
 Test notifications exercise delivery without creating incidents. Failed deliveries use bounded exponential retries, with at most five attempts per cycle. Live retries start at 30 seconds; the demonstration starts at one second. Retry due deliveries respects their eligible time. Permanent failures stop automatically. A deliberate **Retry failed notification** starts another finite cycle with the original ID and retains total attempt counts. Acknowledgement means an HTTP acceptance, not proof that a person received a message.
 
+Notifications guides you through saving a receiver URL, enabling delivery, and sending a test. Sending and retrying stay disabled while receiver changes are unsaved or delivery is paused. Empty queues and ineligible retry times have explicit explanations; a countdown shows when a pending message becomes eligible. Cancellation remains available for waiting messages while delivery is paused. **Delivery history** retains the receiver's result, attempt counts, and original reference.
+
 Pausing delivery preserves the pending queue, which resumes when enabled. Transitions observed while delivery is disabled are not retroactively announced. Cancel pending deliveries before changing the receiver URL. Canceled records remain visible as failed; inspection should precede any manual replay. The durable working queue has bounded capacity. Older terminal records remain in the database journal, but only records still retained in the working outbox can be replayed through the interface.
 
 ## Storage and backup
@@ -67,6 +71,8 @@ The private directory contains `sentinel.db`, its SQLite WAL files while active,
 Observations retain 1–30 days, subject to a maximum of 20,000 snapshots. At a five-second interval that cap is roughly 28 hours, even if more days are selected. Retention is applied after completed checks. The chart loads up to 500 snapshots; CSV exports up to 20,000. A removed service's observations remain in **All services** history until retention removes them. Incident notes and delivery journals persist independently; the interface prioritizes open incidents within its 200-incident view and includes pending deliveries alongside the latest 200 delivery records. Journal storage can grow over time. Make backups and check available disk space.
 
 Use **Settings → Download database backup** for a consistent SQLite backup while running. The downloaded file includes private URLs, observations, incident notes, and notification payloads. Store it privately. Copying only an active `sentinel.db` file can omit uncheckpointed WAL data.
+
+History reloads when you change a service or time filter. Its chart uses actual check times on the horizontal axis and milliseconds on the vertical axis. Hover or tap the chart, or use the recorded-check slider with arrow keys, to inspect an exact time and response value. Only HTTP replies contribute response-time values; checks without a reply appear as gaps rather than zero-millisecond successes. CSV export becomes available after the selected results finish loading. The table lists the latest 30 results in that selection.
 
 Restore into a **new directory**:
 

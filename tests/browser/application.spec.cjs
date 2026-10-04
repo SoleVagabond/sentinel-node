@@ -287,15 +287,14 @@ test('retry countdown enables only eligible messages and still allows cancellati
   const pending = current.deliveries.find(row => row.status === 'pending');
   expect(pending).toBeTruthy();
   pending.next_attempt_at = new Date(time.getTime() + 60000).toISOString();
-  await page.clock.install({ time });
+  // Control the displayed deadline while keeping page loading and timers real.
+  await page.clock.setFixedTime(time);
   await page.route('**/api/state', route => route.fulfill({ json: current }));
-  // Freeze before navigation, with a future target that permits setup time.
-  await page.clock.pauseAt(new Date(time.getTime() + 10000));
   await page.goto('/#notifications');
   await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Cancel pending deliveries', exact: true })).toBeEnabled();
   await expect(page.locator('#retry-help')).toContainText('Next automatic retry');
-  await page.clock.runFor(50000);
+  await page.clock.setFixedTime(new Date(time.getTime() + 61000));
   await expect(page.getByRole('button', { name: 'Retry due deliveries', exact: true })).toBeEnabled();
   await expect(page.locator('#retry-help')).toContainText('ready for retry');
 });
