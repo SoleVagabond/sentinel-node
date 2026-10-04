@@ -2,6 +2,16 @@
 
 October 4, 2026
 
+## Real websites and network-failure corrections: 148 checks passed
+
+The corrected application passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37214468289) at commit `ce29717`. Application, browser, and infrastructure jobs all succeeded on a fresh Linux checkout: **72 Python, 11 frontend, four packaged-SDK contracts, 60 browser workflows, and one mocked infrastructure scenario**. Python and frontend checks also passed on Windows. The browser scenarios cover desktop, 375px, and 320px; no automatic test retries or accessibility rule suppressions were added.
+
+Separately, [35 packaged live-mode workflows](live-verification.md) passed using actual public websites and controlled HTTP failure endpoints. HTTPS checks returned 200 from the portfolio and Northline Cycle; expected 204, HTTP 503, redirects, invalid certificates, nonexistent DNS, and timeout conditions behaved as recorded. Real local receivers verified ordered incident alerts, a lost reply with a 30-second retry, stable-ID deduplication, permanent failure and deliberate replay, redirect refusal, malformed replies, and pending delivery across process restart. Eight concurrent local probes, simultaneous check exclusion, the actual scheduler, pause/manual checks, downloads, restoration, process ownership, and database integrity also passed. The [evidence JSON](evidence/live-verification.json) includes timestamps and the archive hash; public requests were bounded rather than a load test.
+
+The exercise found that denied outbound sockets could be misreported as a website outage. Permission errors now report a monitor fault, leave incident state unchanged, and export unknown observations. Regression tests cover direct and wrapped permission denials, distinct DNS/TLS diagnostics, malformed HTTP responses, and configuration rejection of spaces, controls, unencoded non-ASCII URLs, and invalid ports. Malformed webhook replies remain unconfirmed retryable attempts. The browser verifies monitor attention and HTTP 401/403 access-denial messaging.
+
+Manual browser checks retained the operator's existing service and history, added both project websites, paused/resumed a service, and preserved unsaved editor input during polling. After replacing the running program with the verified portable archive, all three configured websites returned HTTP 200. Notifications remain disabled in that workspace. Only the controlled local receiver received test notifications. The release archive hash matches the archive used for the 35-workflow live verification.
+
 ## Single-operator application 1.0: 137 checks passed
 
 The application release passed [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37183702034) at commit `7a75894`. All three jobs succeeded on a fresh Linux checkout. All 65 Python checks and 10 frontend checks also passed locally on Windows. No AWS resource or external notification recipient was used.
