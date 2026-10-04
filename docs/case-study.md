@@ -18,7 +18,9 @@ The cloud configuration uses a private S3 origin behind CloudFront, uploads its 
 
 ## Evidence and tradeoffs
 
-Thirty application checks, fifteen browser scenarios, and one Terraform security simulation passed. The browser scenarios cover healthy, degraded, outage, stale, unavailable, and recovered states across desktop and two phone widths. Keyboard checks and automated accessibility scans exercise focus behavior and WCAG A/AA rules. The full [verification record](validation.md) links the independently executed Linux workflow and distinguishes observed results from remaining deployment work.
+A review found two history failure cases: malformed optional history could make a valid current observation unavailable, and a partially completed write could show history newer than the displayed status snapshot. History now has its own validation and timestamp boundary. The new unit and browser checks demonstrate that valid current health remains available when optional history fails, without implying that a newer check completed.
+
+Thirty-three application checks, twenty-one browser scenarios, and one Terraform security simulation passed. The browser scenarios cover healthy, degraded, outage, stale, unavailable, and recovered states across desktop and two phone widths. Keyboard checks and automated accessibility scans exercise focus behavior and WCAG A/AA rules. The full [verification record](validation.md) links the independently executed Linux workflow and distinguishes observed results from remaining deployment work.
 
 The implementation deliberately keeps a small operational scope. It measures HTTP response headers and sampled availability rather than claiming full application correctness or continuous uptime. History is bounded and does not replace long-term observability storage. Notifications and multi-region monitoring remain outside this release.
 

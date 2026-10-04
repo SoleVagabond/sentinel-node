@@ -1,33 +1,36 @@
 # Verification record
 
-October 3, 2026
+October 4, 2026
 
-This release was checked locally on Windows and in a fresh Linux checkout through [GitHub Actions run 2](https://github.com/SoleVagabond/sentinel-node/actions/runs/37163748560), commit `c8e38f7`. All three jobs passed. The development baseline is Python 3.13, Node.js 22, Terraform 1.13.5, AWS provider 5.100.0, and Random provider 3.9.1. The dependency lock includes the official Windows and Linux provider checksums.
+The current history-handling release was checked locally on Windows and in a fresh Linux checkout through [GitHub Actions](https://github.com/SoleVagabond/sentinel-node/actions/runs/37176167008), commit `8d17c87`. All three jobs passed. The development baseline is Python 3.13, Node.js 22, Terraform 1.13.5, AWS provider 5.100.0, and Random provider 3.9.1. The dependency lock includes the official Windows and Linux provider checksums.
 
 ## Passed
 
 | Check | Result |
 | --- | --- |
 | Python unit and local HTTP integration tests | 19 passed |
-| Frontend telemetry validation and freshness tests | 7 passed |
+| Frontend telemetry validation, freshness, and history tests | 10 passed |
 | Packaged AWS SDK/S3 contract tests using stubbed responses | 4 passed |
 | JavaScript syntax check | Passed |
 | Clean Lambda packaging | Passed; 2,208 files, pinned pure-Python SDK dependencies, no native Windows/Linux binaries |
 | Reproducible ZIP format | Same source-only inputs produce identical archives |
 | Terraform formatting and schema validation | Passed |
 | Terraform security scenario using mocked providers | 1 passed, covering private bucket access, HTTPS, serialized writes, restricted S3 actions, and disabled old-event retries |
-| Browser scenarios on Linux/Chromium | 15 passed across 1280×900, 375×812, and 320×740 viewports |
+| Browser scenarios on Linux/Chromium | 21 passed across 1280×900, 375×812, and 320×740 viewports |
 | Mobile layout checks | No horizontal overflow in healthy, outage, and stale states at both phone widths |
 | Keyboard checks | Skip link moves focus into main content; scenario controls retain focus after activation |
 | Automated accessibility scans | No violations of the selected WCAG 2 A/AA and 2.1 AA rules in healthy, outage, stale, and recovered states at all three viewports |
 
 The Terraform scenario uses a simulated apply with mocked providers and dummy identifiers. It creates no real AWS resources. The S3 tests use dummy credentials and Botocore Stubber; they make no AWS calls.
 
-The [browser evidence artifact](https://github.com/SoleVagabond/sentinel-node/actions/runs/37163748560/artifacts/11288074878) contains screenshots, the HTML report, and accessibility JSON results. GitHub retains it until October 18, 2026; the checked-in browser suite can regenerate it. Automated scans and Chromium viewport emulation are not a full accessibility audit or physical-device/browser compatibility certification.
+The [browser evidence artifact](https://github.com/SoleVagabond/sentinel-node/actions/runs/37176167008/artifacts/11293486776) contains screenshots, the HTML report, and accessibility JSON results. GitHub retains it until October 18, 2026; the checked-in browser suite can regenerate it. Automated scans and Chromium viewport emulation are not a full accessibility audit or physical-device/browser compatibility certification.
 
 The first workflow run caught prohibited ARIA labels on the sampled history containers. The containers were given valid group roles, and the complete suite passed on the next fresh checkout. No scan rules were suppressed.
 
 ## Browser workflows exercised
+
+- Null history, a null sample, and a null endpoint row leave a valid current observation operational, with history explicitly unavailable.
+- A newer history sample paired with an older completed status snapshot is withheld. The dashboard shows only checks at or before its current observation.
 
 The checked-in [local incident record](evidence/local-incident-sequence.json) retains full snapshots and history for healthy → HTTP 503 outage → deliberately aged telemetry → confirmed recovery. It was recorded through the demo's HTTP controls against a fresh loopback server. The outage opens one incident, and recovery keeps its resolved record.
 
