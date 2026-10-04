@@ -1,6 +1,14 @@
 # SentinelNode
 
+[![Project checks](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml/badge.svg)](https://github.com/SoleVagabond/sentinel-node/actions/workflows/checks.yml)
+
 Service monitoring with incident history and explicit telemetry freshness. A Python monitor probes configured HTTP endpoints; the dashboard separates an observed service failure from a monitor that has stopped reporting.
+
+The local incident lab and automated checks are verified. Live AWS deployment is pending; this release does not claim observed cloud uptime. See the [case study](docs/case-study.md) and [verification record](docs/validation.md).
+
+![Local incident lab showing an HTTP service outage](docs/evidence/outage.png)
+
+[Stale monitoring screenshot](docs/evidence/stale.png) · [Retained recovery timeline](docs/evidence/recovery.png) · [Recorded local incident sequence](docs/evidence/local-incident-sequence.json)
 
 ## Try it locally
 
@@ -51,11 +59,23 @@ node --check frontend/app.js
 
 Tests include actual loopback HTTP services, concurrent collection, incident transitions, timeout handling, configuration validation, bounded history, and frontend freshness rules. They do not contact configured public services or require AWS credentials.
 
+For browser checks, install the test dependencies and Chromium:
+
+```console
+npm ci
+npx playwright install chromium
+npm run test:browser
+```
+
+On Linux, use `npx playwright install --with-deps chromium` to install browser system dependencies too. The suite starts its own loopback server on port 8792 and checks desktop, 375-pixel, and 320-pixel layouts, outage/recovery, unavailable telemetry, keyboard focus, and automated WCAG A/AA rules. Reports, screenshots, and accessibility results are saved under `work/` and attached to GitHub workflow runs. Automated accessibility scans do not establish full WCAG conformance.
+
 ## Cloud deployment
 
 The cloud path uses Python 3.13 Lambda, EventBridge checks every minute, S3 telemetry/history, and CloudFront HTTPS delivery. Frontend files are uploaded by Terraform. Direct public access to the S3 bucket is blocked; the CloudFront distribution is still a **public dashboard**. Do not put private hostnames, tokens, or internal incident details in telemetry intended for public delivery.
 
 AWS resources incur charges. Build and review the plan before applying it; the local demo does not deploy anything.
+
+Before applying, confirm that your AWS account is activated and that its regional Lambda concurrency quota supports reserving one execution. [AWS requires at least 100 executions to remain unreserved](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html); a new account limited to 10 cannot use this setting. Request any account quota change explicitly before deploying. Successful sign-in and a Terraform plan do not establish that resources can be created.
 
 ```console
 python scripts/package_lambda.py --config backend/endpoints.json

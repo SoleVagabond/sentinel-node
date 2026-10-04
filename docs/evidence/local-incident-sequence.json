@@ -1,0 +1,518 @@
+{
+  "recorded_at": "2026-10-04T00:11:04.866499+00:00",
+  "environment": "local incident lab",
+  "notes": "Real loopback HTTP probes. The pause scenario deliberately ages the last timestamp by 45 seconds; this is not evidence of a live cloud outage.",
+  "steps": [
+    {
+      "scenario": "healthy",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T00:11:04.894259+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:50575/fixtures/storefront",
+            "timestamp": "2026-10-04T00:11:04.888805+00:00",
+            "status_code": 200,
+            "latency_ms": 2.71,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:50575/fixtures/api",
+            "timestamp": "2026-10-04T00:11:04.889501+00:00",
+            "status_code": 200,
+            "latency_ms": 2.56,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:50575/fixtures/identity",
+            "timestamp": "2026-10-04T00:11:04.889802+00:00",
+            "status_code": 200,
+            "latency_ms": 3.36,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:50575/fixtures/queue",
+            "timestamp": "2026-10-04T00:11:04.890161+00:00",
+            "status_code": 200,
+            "latency_ms": 3.71,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 4,
+          "Yellow": 0,
+          "Red": 0
+        },
+        "incidents": []
+      },
+      "history": {
+        "schema_version": 1,
+        "samples": [
+          {
+            "timestamp": "2026-10-04T00:11:04.894259+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 2.71,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Green",
+                "latency_ms": 2.56,
+                "status_code": 200
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 3.36,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 3.71,
+                "status_code": 200
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "outage",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T00:11:04.899766+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:50575/fixtures/storefront",
+            "timestamp": "2026-10-04T00:11:04.896796+00:00",
+            "status_code": 200,
+            "latency_ms": 1.39,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:50575/fixtures/api",
+            "timestamp": "2026-10-04T00:11:04.896976+00:00",
+            "status_code": 503,
+            "latency_ms": 2.0,
+            "error": "Unexpected HTTP 503",
+            "status": "Red"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:50575/fixtures/identity",
+            "timestamp": "2026-10-04T00:11:04.897196+00:00",
+            "status_code": 200,
+            "latency_ms": 1.93,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:50575/fixtures/queue",
+            "timestamp": "2026-10-04T00:11:04.897859+00:00",
+            "status_code": 200,
+            "latency_ms": 1.63,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 3,
+          "Yellow": 0,
+          "Red": 1
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T00:11:04.899766+00:00",
+            "resolved_at": null,
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503"
+          }
+        ]
+      },
+      "history": {
+        "schema_version": 1,
+        "samples": [
+          {
+            "timestamp": "2026-10-04T00:11:04.894259+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 2.71,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Green",
+                "latency_ms": 2.56,
+                "status_code": 200
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 3.36,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 3.71,
+                "status_code": 200
+              }
+            ]
+          },
+          {
+            "timestamp": "2026-10-04T00:11:04.899766+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 1.39,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Red",
+                "latency_ms": 2.0,
+                "status_code": 503
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 1.93,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 1.63,
+                "status_code": 200
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "stale",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T00:10:19.901940+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:50575/fixtures/storefront",
+            "timestamp": "2026-10-04T00:11:04.896796+00:00",
+            "status_code": 200,
+            "latency_ms": 1.39,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:50575/fixtures/api",
+            "timestamp": "2026-10-04T00:11:04.896976+00:00",
+            "status_code": 503,
+            "latency_ms": 2.0,
+            "error": "Unexpected HTTP 503",
+            "status": "Red"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:50575/fixtures/identity",
+            "timestamp": "2026-10-04T00:11:04.897196+00:00",
+            "status_code": 200,
+            "latency_ms": 1.93,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:50575/fixtures/queue",
+            "timestamp": "2026-10-04T00:11:04.897859+00:00",
+            "status_code": 200,
+            "latency_ms": 1.63,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 3,
+          "Yellow": 0,
+          "Red": 1
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T00:11:04.899766+00:00",
+            "resolved_at": null,
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503"
+          }
+        ]
+      },
+      "history": {
+        "schema_version": 1,
+        "samples": [
+          {
+            "timestamp": "2026-10-04T00:11:04.894259+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 2.71,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Green",
+                "latency_ms": 2.56,
+                "status_code": 200
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 3.36,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 3.71,
+                "status_code": 200
+              }
+            ]
+          },
+          {
+            "timestamp": "2026-10-04T00:11:04.899766+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 1.39,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Red",
+                "latency_ms": 2.0,
+                "status_code": 503
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 1.93,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 1.63,
+                "status_code": 200
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "recovered",
+      "snapshot": {
+        "schema_version": 1,
+        "mode": "demo",
+        "last_updated": "2026-10-04T00:11:04.907323+00:00",
+        "interval_seconds": 5,
+        "stale_after_seconds": 15,
+        "endpoints": [
+          {
+            "id": "storefront",
+            "name": "Storefront",
+            "url": "http://127.0.0.1:50575/fixtures/storefront",
+            "timestamp": "2026-10-04T00:11:04.904197+00:00",
+            "status_code": 200,
+            "latency_ms": 1.72,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "api",
+            "name": "Orders API",
+            "url": "http://127.0.0.1:50575/fixtures/api",
+            "timestamp": "2026-10-04T00:11:04.904365+00:00",
+            "status_code": 200,
+            "latency_ms": 1.85,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "identity",
+            "name": "Identity service",
+            "url": "http://127.0.0.1:50575/fixtures/identity",
+            "timestamp": "2026-10-04T00:11:04.904610+00:00",
+            "status_code": 200,
+            "latency_ms": 2.03,
+            "error": null,
+            "status": "Green"
+          },
+          {
+            "id": "queue",
+            "name": "Worker health",
+            "url": "http://127.0.0.1:50575/fixtures/queue",
+            "timestamp": "2026-10-04T00:11:04.904946+00:00",
+            "status_code": 200,
+            "latency_ms": 2.14,
+            "error": null,
+            "status": "Green"
+          }
+        ],
+        "summary": {
+          "Green": 4,
+          "Yellow": 0,
+          "Red": 0
+        },
+        "incidents": [
+          {
+            "endpoint_id": "api",
+            "name": "Orders API",
+            "opened_at": "2026-10-04T00:11:04.899766+00:00",
+            "resolved_at": "2026-10-04T00:11:04.907323+00:00",
+            "severity": "Red",
+            "reason": "Unexpected HTTP 503"
+          }
+        ]
+      },
+      "history": {
+        "schema_version": 1,
+        "samples": [
+          {
+            "timestamp": "2026-10-04T00:11:04.894259+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 2.71,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Green",
+                "latency_ms": 2.56,
+                "status_code": 200
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 3.36,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 3.71,
+                "status_code": 200
+              }
+            ]
+          },
+          {
+            "timestamp": "2026-10-04T00:11:04.899766+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 1.39,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Red",
+                "latency_ms": 2.0,
+                "status_code": 503
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 1.93,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 1.63,
+                "status_code": 200
+              }
+            ]
+          },
+          {
+            "timestamp": "2026-10-04T00:11:04.907323+00:00",
+            "endpoints": [
+              {
+                "id": "storefront",
+                "status": "Green",
+                "latency_ms": 1.72,
+                "status_code": 200
+              },
+              {
+                "id": "api",
+                "status": "Green",
+                "latency_ms": 1.85,
+                "status_code": 200
+              },
+              {
+                "id": "identity",
+                "status": "Green",
+                "latency_ms": 2.03,
+                "status_code": 200
+              },
+              {
+                "id": "queue",
+                "status": "Green",
+                "latency_ms": 2.14,
+                "status_code": 200
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

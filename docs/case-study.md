@@ -1,6 +1,6 @@
 # SentinelNode: making a status dashboard trustworthy
 
-Self-directed systems and monitoring project. Current verification covers the local application and simulated infrastructure, with live deployment still pending.
+Self-directed systems and monitoring project. Verification covers the local application, desktop and phone-width browser workflows, and simulated infrastructure on Windows and fresh Linux checkouts. Live deployment is pending.
 
 ## Problem
 
@@ -18,10 +18,10 @@ The cloud configuration uses a private S3 origin behind CloudFront, uploads its 
 
 ## Evidence and tradeoffs
 
-Thirty application checks passed, alongside a Terraform security simulation. Browser checks exercised healthy, degraded, outage, stale, unavailable, and recovered states. The full [verification record](validation.md) distinguishes observed results from remaining deployment work.
+Thirty application checks, fifteen browser scenarios, and one Terraform security simulation passed. The browser scenarios cover healthy, degraded, outage, stale, unavailable, and recovered states across desktop and two phone widths. Keyboard checks and automated accessibility scans exercise focus behavior and WCAG A/AA rules. The full [verification record](validation.md) links the independently executed Linux workflow and distinguishes observed results from remaining deployment work.
 
 The implementation deliberately keeps a small operational scope. It measures HTTP response headers and sampled availability rather than claiming full application correctness or continuous uptime. History is bounded and does not replace long-term observability storage. Notifications and multi-region monitoring remain outside this release.
 
 ## Next release gate
 
-Complete mobile/accessibility checks, then verify an intentional cloud deployment with a representative authorized service. Demonstrate both a service outage and an interruption to the monitoring path before presenting the system as deployed monitoring work.
+Verify an intentional cloud deployment with a representative authorized service after AWS account prerequisites are resolved. Demonstrate both a service outage and an interruption to the monitoring path before presenting the system as deployed monitoring work. The local incident lab demonstrates these transitions but does not replace that cloud evidence.
